@@ -1,0 +1,56 @@
+# Build output (CMake + CPM fetches deps into build/_deps)
+build/
+out/
+cmake-build-*/
+install/
+
+# CMake artifacts if ever configured in-source
+CMakeCache.txt
+CMakeFiles/
+CMakeUserPresets.json
+cmake_install.cmake
+compile_commands.json
+
+# Visual Studio / MSBuild
+.vs/
+*.sln
+*.vcxproj
+*.vcxproj.filters
+*.vcxproj.user
+*.VC.db
+*.VC.opendb
+Debug/
+Release/
+MinSizeRel/
+RelWithDebInfo/
+x64/
+x86/
+
+# Other IDEs / editors
+.idea/
+.vscode/
+*.swp
+*~
+
+# Compiled objects, libs, executables
+*.o
+*.obj
+*.exe
+*.dll
+*.so
+*.dylib
+*.a
+*.lib
+*.exp
+*.ilk
+*.pdb
+*.idb
+
+# Dear ImGui runtime layout state
+imgui.ini
+
+# OS cruft
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+.DS_Store
