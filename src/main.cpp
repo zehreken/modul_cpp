@@ -32,12 +32,16 @@ void audio_callback(ma_device *pDevice, void *pOutput, const void *pInput, ma_ui
     float vol = state->volume.load(std::memory_order_relaxed);
     float phase_increment = (TWO_PI * freq) / SAMPLE_RATE;
 
+    const auto *input = static_cast<const float *>(pInput);
     for (ma_uint32 i = 0; i < frameCount; ++i)
     {
         float sample = std::sin(state->phase) * vol;
 
-        *output++ = sample; // L
-        *output++ = sample; // R
+        float in_left = *input++ * vol;
+        float in_right = *input++ * vol;
+
+        *output++ = in_left;  // L
+        *output++ = in_right; // R
 
         state->scope_buffer[state->scope_write_index] = sample;
         state->scope_write_index = (state->scope_write_index + 1) % SCOPE_SIZE;
@@ -87,12 +91,16 @@ int main()
     ImGui_ImplOpenGL3_Init("#version 150");
 
     AudioState audio_state;
-    ma_device_config config = ma_device_config_init(ma_device_type_playback);
+    ma_device_config config = ma_device_config_init(ma_device_type_duplex);
     config.playback.format = ma_format_f32;
     config.playback.channels = 2;
+    config.capture.format = ma_format_f32;
+    config.capture.channels = 2;
     config.sampleRate = static_cast<ma_uint32>(SAMPLE_RATE);
     config.dataCallback = audio_callback;
     config.pUserData = &audio_state;
+    config.periodSizeInFrames = 128;                                // Buffer size, remember this defines latency
+    config.performanceProfile = ma_performance_profile_low_latency; // I don't this changed anything, at least at this simple state of the program
 
     ma_device device;
     if (ma_device_init(nullptr, &config, &device) != MA_SUCCESS)
