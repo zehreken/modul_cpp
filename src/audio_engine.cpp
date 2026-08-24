@@ -91,6 +91,27 @@ bool AudioEngine::select_playback_device(int device_index)
     return ma_device_start(&impl_->device) == MA_SUCCESS;
 }
 
+std::vector<AudioDeviceInfo> AudioEngine::get_capture_devices()
+{
+    std::vector<AudioDeviceInfo> devices;
+    ma_device_info *pCaptureInfos;
+    ma_uint32 captureCount;
+
+    if (ma_context_get_devices(&impl_->context, nullptr, nullptr, &pCaptureInfos, &captureCount) == MA_SUCCESS)
+    {
+        for (ma_uint32 i = 0; i < captureCount; ++i)
+        {
+            devices.push_back({pCaptureInfos[i].name, static_cast<int>(i), pCaptureInfos[i].isDefault != 0});
+        }
+    }
+    return devices;
+}
+
+bool AudioEngine::select_capture_device(int device_index)
+{
+    return false;
+}
+
 void AudioEngine::c_audio_callback(ma_device *pDevice, void *pOutput, const void *pInput, ma_uint32 frameCount)
 {
     auto *engine = static_cast<AudioEngine *>(pDevice->pUserData);

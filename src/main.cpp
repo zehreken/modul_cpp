@@ -7,6 +7,7 @@
 #include <iostream>
 
 #include "audio_engine.hpp"
+#include "gui/main_view.hpp"
 
 int main()
 {
@@ -36,14 +37,16 @@ int main()
     ImGui::CreateContext();
     ImGui::StyleColorsDark();
     ImGuiStyle &style = ImGui::GetStyle();
-    style.ScaleAllSizes(2.0f);
-    style.FontScaleDpi = 2.0f;
+    style.ScaleAllSizes(scaleX);
+    style.FontScaleDpi = scaleX;
 
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 150");
 
     AudioEngine audio_engine;
     audio_engine.init();
+
+    MainView main_view;
 
     while (!glfwWindowShouldClose(window))
     {
@@ -53,47 +56,7 @@ int main()
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
-        if (ImGui::BeginMainMenuBar())
-        {
-            if (ImGui::BeginMenu("File"))
-            {
-                if (ImGui::MenuItem("New", "Ctrl + N"))
-                {
-                }
-                if (ImGui::MenuItem("Open", "Ctrl + O"))
-                {
-                }
-                if (ImGui::MenuItem("Save", "Ctrl + S"))
-                {
-                }
-                ImGui::EndMenu();
-            }
-            ImGui::EndMainMenuBar();
-        }
-
-        ImGui::Begin("Oscillator Controls");
-
-        float freq = audio_engine.get_frequency();
-
-        if (ImGui::SliderFloat("Frequency (Hz)", &freq, 20.0f, 2000.0f, "%.1f Hz"))
-        {
-            audio_engine.set_frequency(freq);
-        }
-
-        float vol = audio_engine.get_volume();
-        if (ImGui::SliderFloat("Volume", &vol, 0.0f, 1.0f, "%.2f"))
-        {
-            audio_engine.set_volume(vol);
-        }
-
-        ImGui::Separator();
-
-        ImGui::Text("Oscilloscope Output:");
-        float display_buffer_[512]{0.0f};
-        audio_engine.copy_scope_buffer(display_buffer_, AudioEngine::SCOPE_SIZE);
-        ImGui::PlotLines("##Waveform", display_buffer_, AudioEngine::SCOPE_SIZE, 0, nullptr, -1.0f, 1.0f, ImVec2(0, 150));
-
-        ImGui::End();
+        main_view.render(audio_engine);
 
         ImGui::Render();
         int display_w, display_h;
@@ -107,7 +70,7 @@ int main()
     }
 
     // Cleanup
-    audio_engine.shutdown();
+    // audio_engine.shutdown();
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();

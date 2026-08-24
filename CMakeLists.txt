@@ -30,6 +30,9 @@ add_executable(modul_app
     ${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.cpp
     ${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp
     src/audio_engine.cpp
+    src/gui/main_view.cpp
+    src/gui/device_view.cpp
+    src/gui/scope_view.cpp
 )
 
 # 4. Set include paths
