@@ -12,6 +12,12 @@ struct AudioDeviceInfo
     bool is_default;
 };
 
+struct AudioDevices
+{
+    std::vector<AudioDeviceInfo> playback_devices;
+    std::vector<AudioDeviceInfo> capture_devices;
+};
+
 class AudioEngine
 {
 public:
@@ -24,11 +30,8 @@ public:
     bool init();
     void shutdown();
 
-    std::vector<AudioDeviceInfo> get_playback_devices();
-    bool select_playback_device(int device_index);
-
-    std::vector<AudioDeviceInfo> get_capture_devices();
-    bool select_capture_device(int device_index);
+    AudioDevices get_audio_devices();
+    bool select_devices(int playback_device_index, int capture_device_index);
 
     void set_frequency(float freq) { frequency_.store(freq, std::memory_order_relaxed); };
     float get_frequency() const { return frequency_.load(std::memory_order_relaxed); };

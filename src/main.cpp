@@ -1,5 +1,3 @@
-#define MINIAUDIO_IMPLEMENTATION
-
 #include <GLFW/glfw3.h>
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
@@ -22,14 +20,14 @@ int main()
 #endif
 
     GLFWwindow *window = glfwCreateWindow(1024, 600, "modul ❤", nullptr, nullptr);
-    float scaleX, scaleY;
-    glfwGetWindowContentScale(window, &scaleX, &scaleY); // It is 1.5 for my screen
-
     if (!window)
     {
         glfwTerminate();
         return -1;
     }
+
+    float scaleX, scaleY;
+    glfwGetWindowContentScale(window, &scaleX, &scaleY); // It is 1.5 for my screen
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1); // Enable vsync
 
