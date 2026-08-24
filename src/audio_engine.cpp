@@ -3,6 +3,7 @@
 #define MINIAUDIO_IMPLEMENTATION
 #include "miniaudio.h"
 
+#include <algorithm>
 #include <cmath>
 #include <cstring>
 
@@ -11,6 +12,7 @@ struct AudioEngine::Impl
     ma_context context;
     ma_device device;
     bool is_device_initialized{false};
+    bool is_context_initialized{false};
 };
 
 AudioEngine::AudioEngine() : impl_(new Impl()) {}
@@ -27,6 +29,7 @@ bool AudioEngine::init()
     {
         return false;
     }
+    impl_->is_context_initialized = true;
     return select_devices(-1, -1); // init with default device
 }
 
@@ -37,7 +40,11 @@ void AudioEngine::shutdown()
         ma_device_uninit(&impl_->device);
         impl_->is_device_initialized = false;
     }
-    ma_context_uninit(&impl_->context);
+    if (impl_->is_context_initialized)
+    {
+        ma_context_uninit(&impl_->context);
+        impl_->is_context_initialized = false;
+    }
 }
 
 AudioDevices AudioEngine::get_audio_devices()
@@ -122,7 +129,7 @@ void AudioEngine::process_audio(float *output, const float *input, unsigned int 
 
     for (unsigned int i = 0; i < frameCount; ++i)
     {
-        float sample = sin(phase_) * vol;
+        float sample = std::sin(phase_) * vol;
 
         float in_left = input ? *input++ : 0.0f;
         float in_right = input ? *input++ : 0.0f;
@@ -144,6 +151,6 @@ void AudioEngine::process_audio(float *output, const float *input, unsigned int 
 
 void AudioEngine::copy_scope_buffer(float *out_target, size_t count)
 {
-    size_t copy_size = min(count, SCOPE_SIZE);
+    size_t copy_size = std::min(count, SCOPE_SIZE);
     std::memcpy(out_target, scope_buffer_, copy_size * sizeof(float));
 }

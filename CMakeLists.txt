@@ -42,7 +42,12 @@ target_include_directories(modul_app PRIVATE
     ${imgui_SOURCE_DIR}/backends
 )
 
-# 5. Link libraries cross-platform
+# 5. Windows: stop windows.h from defining min/max macros (breaks std::min)
+if(WIN32)
+    target_compile_definitions(modul_app PRIVATE NOMINMAX WIN32_LEAN_AND_MEAN)
+endif()
+
+# 6. Link libraries cross-platform
 if(APPLE)
     target_link_libraries(modul_app PRIVATE glfw "-framework OpenGL" "-framework Cocoa" "-framework IOKit" "-framework CoreVideo")
 elseif(WIN32)
