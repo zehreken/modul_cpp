@@ -1,60 +1,12 @@
 #define MINIAUDIO_IMPLEMENTATION
-#include "miniaudio.h"
 
 #include <GLFW/glfw3.h>
 #include "imgui.h"
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 #include <iostream>
-#include <cmath>
 
-constexpr float SAMPLE_RATE = 48000.0f;
-constexpr size_t SCOPE_SIZE = 512;
-constexpr float FREQUENCY = 440.0f;
-constexpr float TWO_PI = 6.28318530717958647692f;
-
-struct AudioState
-{
-    std::atomic<float> frequency{FREQUENCY};
-    std::atomic<float> volume{0.2f};
-    float phase{0.0f};
-
-    float scope_buffer[SCOPE_SIZE]{0.0f};
-    size_t scope_write_index{0};
-};
-
-void audio_callback(ma_device *pDevice, void *pOutput, const void *pInput, ma_uint32 frameCount)
-{
-    auto *state = static_cast<AudioState *>(pDevice->pUserData);
-    float *output = static_cast<float *>(pOutput);
-
-    float freq = state->frequency.load(std::memory_order_relaxed);
-    float vol = state->volume.load(std::memory_order_relaxed);
-    float phase_increment = (TWO_PI * freq) / SAMPLE_RATE;
-
-    const auto *input = static_cast<const float *>(pInput);
-    for (ma_uint32 i = 0; i < frameCount; ++i)
-    {
-        float sample = std::sin(state->phase) * vol;
-
-        float in_left = *input++ * vol;
-        float in_right = *input++ * vol;
-
-        *output++ = in_left;  // L
-        *output++ = in_right; // R
-
-        state->scope_buffer[state->scope_write_index] = sample;
-        state->scope_write_index = (state->scope_write_index + 1) % SCOPE_SIZE;
-
-        state->phase += phase_increment;
-        if (state->phase >= TWO_PI)
-        {
-            state->phase -= TWO_PI;
-        }
-    }
-
-    (void)pInput;
-}
+#include "audio_engine.hpp"
 
 int main()
 {
@@ -90,25 +42,8 @@ int main()
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 150");
 
-    AudioState audio_state;
-    ma_device_config config = ma_device_config_init(ma_device_type_duplex);
-    config.playback.format = ma_format_f32;
-    config.playback.channels = 2;
-    config.capture.format = ma_format_f32;
-    config.capture.channels = 2;
-    config.sampleRate = static_cast<ma_uint32>(SAMPLE_RATE);
-    config.dataCallback = audio_callback;
-    config.pUserData = &audio_state;
-    config.periodSizeInFrames = 128;                                // Buffer size, remember this defines latency
-    config.performanceProfile = ma_performance_profile_low_latency; // I don't this changed anything, at least at this simple state of the program
-
-    ma_device device;
-    if (ma_device_init(nullptr, &config, &device) != MA_SUCCESS)
-    {
-        std::cerr << "Failed to initialize audio device.\n";
-        return -1;
-    }
-    ma_device_start(&device);
+    AudioEngine audio_engine;
+    audio_engine.init();
 
     while (!glfwWindowShouldClose(window))
     {
@@ -138,23 +73,25 @@ int main()
 
         ImGui::Begin("Oscillator Controls");
 
-        float freq = audio_state.frequency.load();
+        float freq = audio_engine.get_frequency();
 
         if (ImGui::SliderFloat("Frequency (Hz)", &freq, 20.0f, 2000.0f, "%.1f Hz"))
         {
-            audio_state.frequency.store(freq);
+            audio_engine.set_frequency(freq);
         }
 
-        float vol = audio_state.volume.load();
+        float vol = audio_engine.get_volume();
         if (ImGui::SliderFloat("Volume", &vol, 0.0f, 1.0f, "%.2f"))
         {
-            audio_state.volume.store(vol);
+            audio_engine.set_volume(vol);
         }
 
         ImGui::Separator();
 
         ImGui::Text("Oscilloscope Output:");
-        ImGui::PlotLines("##Waveform", audio_state.scope_buffer, SCOPE_SIZE, static_cast<int>(audio_state.scope_write_index), nullptr, -1.0f, 1.0f, ImVec2(0, 150));
+        float display_buffer_[512]{0.0f};
+        audio_engine.copy_scope_buffer(display_buffer_, AudioEngine::SCOPE_SIZE);
+        ImGui::PlotLines("##Waveform", display_buffer_, AudioEngine::SCOPE_SIZE, 0, nullptr, -1.0f, 1.0f, ImVec2(0, 150));
 
         ImGui::End();
 
@@ -170,7 +107,7 @@ int main()
     }
 
     // Cleanup
-    ma_device_uninit(&device);
+    audio_engine.shutdown();
     ImGui_ImplOpenGL3_Shutdown();
     ImGui_ImplGlfw_Shutdown();
     ImGui::DestroyContext();
