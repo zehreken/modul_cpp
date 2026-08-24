@@ -44,7 +44,7 @@ int main()
     AudioEngine audio_engine;
     audio_engine.init();
 
-    MainView main_view;
+    MainView main_view(audio_engine);
 
     while (!glfwWindowShouldClose(window))
     {

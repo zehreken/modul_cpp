@@ -2,11 +2,16 @@
 #include "audio_engine.hpp"
 #include "imgui.h"
 
+DeviceView::DeviceView(AudioEngine &audio_engine) : audio_devices(audio_engine.get_audio_devices()) {}
+
 void DeviceView::render(AudioEngine &audio_engine)
 {
     ImGui::Begin("Device Settings");
 
-    auto audio_devices = audio_engine.get_audio_devices();
+    if (ImGui::Button("Refresh Devices"))
+    {
+        audio_devices = audio_engine.get_audio_devices();
+    }
     if (!audio_devices.playback_devices.empty())
     {
         const char *current_label = audio_devices.playback_devices[selected_playback_device_id_].name.c_str();

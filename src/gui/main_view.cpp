@@ -2,6 +2,8 @@
 #include "gui/device_view.hpp"
 #include "imgui.h"
 
+MainView::MainView(AudioEngine &audio_engine) : device_view_(audio_engine) {}
+
 void MainView::render(AudioEngine &audio_engine)
 {
     if (ImGui::BeginMainMenuBar())
