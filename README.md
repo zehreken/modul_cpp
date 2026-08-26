@@ -8,3 +8,6 @@ then run
 cmake -B build
 then run
 cmake --build build
+
+clang-tidy example
+clang-tidy -p cmake-build-ninja src/audio_engine.cpp

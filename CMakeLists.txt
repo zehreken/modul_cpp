@@ -45,6 +45,11 @@ target_include_directories(modul_app PRIVATE
 # 5. Windows: stop windows.h from defining min/max macros (breaks std::min)
 if(WIN32)
     target_compile_definitions(modul_app PRIVATE NOMINMAX WIN32_LEAN_AND_MEAN)
+    # The MSVC STL hard-errors (STL1000) when parsed by Clang older than 19.
+    # MSVC itself never trips this check, so the define is inert for the real
+    # build; it exists so clang-tidy/clangd can read compile_commands.json.
+    # Drop it once LLVM here is 19 or newer.
+    target_compile_definitions(modul_app PRIVATE _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH)
 endif()
 
 # 6. Link libraries cross-platform
