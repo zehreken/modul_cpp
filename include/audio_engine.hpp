@@ -7,6 +7,9 @@
 
 struct AudioDeviceInfo {
     std::string name_;
+    int channels_;
+    int format_;
+    int sample_rate_;
     int id_index_;
     bool is_default_;
 };

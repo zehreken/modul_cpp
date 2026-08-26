@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstring>
+#include <iostream>
 
 struct AudioEngine::Impl {
     ma_context context_;
@@ -53,14 +54,42 @@ AudioDevices AudioEngine::get_audio_devices() {
                                &playback_count, &capture_infos,
                                &capture_count) == MA_SUCCESS) {
         for (ma_uint32 i = 0; i < playback_count; ++i) {
-            playback_devices.push_back({playback_infos[i].name,
-                                        static_cast<int>(i),
-                                        playback_infos[i].isDefault != 0});
+            auto info = playback_infos[i];
+
+            AudioDeviceInfo device_info;
+            device_info.name_ = info.name;
+            device_info.id_index_ = static_cast<int>(i);
+            device_info.is_default_ = info.isDefault != 0;
+            if (ma_context_get_device_info(&impl_->context_,
+                                           ma_device_type_playback, &info.id,
+                                           &info) == MA_SUCCESS) {
+                device_info.channels_ =
+                    static_cast<int>(info.nativeDataFormats->channels);
+                device_info.format_ =
+                    static_cast<int>(info.nativeDataFormats->format);
+                device_info.sample_rate_ =
+                    static_cast<int>(info.nativeDataFormats->sampleRate);
+            }
+            playback_devices.push_back(device_info);
         }
         for (ma_uint32 i = 0; i < capture_count; ++i) {
-            capture_devices.push_back({capture_infos[i].name,
-                                       static_cast<int>(i),
-                                       capture_infos[i].isDefault != 0});
+            auto info = capture_infos[i];
+
+            AudioDeviceInfo device_info;
+            device_info.name_ = info.name;
+            device_info.id_index_ = static_cast<int>(i);
+            device_info.is_default_ = info.isDefault != 0;
+            if (ma_context_get_device_info(&impl_->context_,
+                                           ma_device_type_capture, &info.id,
+                                           &info) == MA_SUCCESS) {
+                device_info.channels_ =
+                    static_cast<int>(info.nativeDataFormats->channels);
+                device_info.format_ =
+                    static_cast<int>(info.nativeDataFormats->format);
+                device_info.sample_rate_ =
+                    static_cast<int>(info.nativeDataFormats->sampleRate);
+            }
+            capture_devices.push_back(device_info);
         }
     }
 
