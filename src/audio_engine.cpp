@@ -8,10 +8,10 @@
 #include <cstring>
 
 struct AudioEngine::Impl {
-    ma_context context;
-    ma_device device;
-    bool is_device_initialized{false};
-    bool is_context_initialized{false};
+    ma_context context_;
+    ma_device device_;
+    bool is_device_initialized_{false};
+    bool is_context_initialized_{false};
 };
 
 AudioEngine::AudioEngine() : impl_(new Impl()) {}
@@ -22,21 +22,21 @@ AudioEngine::~AudioEngine() {
 };
 
 bool AudioEngine::init() {
-    if (ma_context_init(nullptr, 0, nullptr, &impl_->context) != MA_SUCCESS) {
+    if (ma_context_init(nullptr, 0, nullptr, &impl_->context_) != MA_SUCCESS) {
         return false;
     }
-    impl_->is_context_initialized = true;
+    impl_->is_context_initialized_ = true;
     return select_devices(-1, -1); // init with default device
 }
 
 void AudioEngine::shutdown() {
-    if (impl_->is_device_initialized) {
-        ma_device_uninit(&impl_->device);
-        impl_->is_device_initialized = false;
+    if (impl_->is_device_initialized_) {
+        ma_device_uninit(&impl_->device_);
+        impl_->is_device_initialized_ = false;
     }
-    if (impl_->is_context_initialized) {
-        ma_context_uninit(&impl_->context);
-        impl_->is_context_initialized = false;
+    if (impl_->is_context_initialized_) {
+        ma_context_uninit(&impl_->context_);
+        impl_->is_context_initialized_ = false;
     }
 }
 
@@ -49,8 +49,9 @@ AudioDevices AudioEngine::get_audio_devices() {
     ma_device_info* capture_infos;
     ma_uint32 capture_count;
 
-    if (ma_context_get_devices(&impl_->context, &playback_infos, &playback_count,
-                               &capture_infos, &capture_count) == MA_SUCCESS) {
+    if (ma_context_get_devices(&impl_->context_, &playback_infos,
+                               &playback_count, &capture_infos,
+                               &capture_count) == MA_SUCCESS) {
         for (ma_uint32 i = 0; i < playback_count; ++i) {
             playback_devices.push_back({playback_infos[i].name,
                                         static_cast<int>(i),
@@ -69,9 +70,9 @@ AudioDevices AudioEngine::get_audio_devices() {
 
 bool AudioEngine::select_devices(int playback_device_index,
                                  int capture_device_index) {
-    if (impl_->is_device_initialized) {
-        ma_device_uninit(&impl_->device);
-        impl_->is_device_initialized = false;
+    if (impl_->is_device_initialized_) {
+        ma_device_uninit(&impl_->device_);
+        impl_->is_device_initialized_ = false;
     }
 
     ma_device_config config = ma_device_config_init(ma_device_type_duplex);
@@ -88,8 +89,9 @@ bool AudioEngine::select_devices(int playback_device_index,
     ma_uint32 playback_count;
     ma_device_info* capture_infos;
     ma_uint32 capture_count;
-    if (ma_context_get_devices(&impl_->context, &playback_infos, &playback_count,
-                               &capture_infos, &capture_count) != MA_SUCCESS) {
+    if (ma_context_get_devices(&impl_->context_, &playback_infos,
+                               &playback_count, &capture_infos,
+                               &capture_count) != MA_SUCCESS) {
         return false;
     }
     if (playback_device_index >= 0 && playback_device_index < playback_count) {
@@ -100,29 +102,29 @@ bool AudioEngine::select_devices(int playback_device_index,
         config.capture.pDeviceID = &capture_infos[capture_device_index].id;
     }
 
-    if (ma_device_init(&impl_->context, &config, &impl_->device) !=
+    if (ma_device_init(&impl_->context_, &config, &impl_->device_) !=
         MA_SUCCESS) {
         return false;
     }
 
-    impl_->is_device_initialized = true;
-    return ma_device_start(&impl_->device) == MA_SUCCESS;
+    impl_->is_device_initialized_ = true;
+    return ma_device_start(&impl_->device_) == MA_SUCCESS;
 }
 
-void AudioEngine::c_audio_callback(ma_device* pDevice, void* pOutput,
-                                   const void* pInput, ma_uint32 frameCount) {
-    auto* engine = static_cast<AudioEngine*>(pDevice->pUserData);
-    engine->process_audio(static_cast<float*>(pOutput),
-                          static_cast<const float*>(pInput), frameCount);
+void AudioEngine::c_audio_callback(ma_device* device, void* output,
+                                   const void* input, ma_uint32 frame_count) {
+    auto* engine = static_cast<AudioEngine*>(device->pUserData);
+    engine->process_audio(static_cast<float*>(output),
+                          static_cast<const float*>(input), frame_count);
 }
 
 void AudioEngine::process_audio(float* output, const float* input,
-                                unsigned int frameCount) {
+                                unsigned int frame_count) {
     float freq = frequency_.load(std::memory_order_relaxed);
     float vol = volume_.load(std::memory_order_relaxed);
     float phase_incr = (TWO_PI * freq) / SAMPLE_RATE;
 
-    for (unsigned int i = 0; i < frameCount; ++i) {
+    for (unsigned int i = 0; i < frame_count; ++i) {
         float sample = std::sin(phase_) * vol;
 
         float in_left = input ? *input++ : 0.0f;

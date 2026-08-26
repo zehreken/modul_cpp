@@ -1,3 +1,0 @@
-﻿# Point clangd at the Ninja build's live compile database.
-CompileFlags:
-  CompilationDatabase: cmake-build-ninja
