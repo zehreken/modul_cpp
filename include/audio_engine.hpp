@@ -1,31 +1,28 @@
 #pragma once
 
-#include <vector>
-#include <string>
 #include <atomic>
 #include <cstddef>
+#include <string>
+#include <vector>
 
-struct AudioDeviceInfo
-{
-    std::string name;
-    int id_index;
-    bool is_default;
+struct AudioDeviceInfo {
+    std::string name_;
+    int id_index_;
+    bool is_default_;
 };
 
-struct AudioDevices
-{
-    std::vector<AudioDeviceInfo> playback_devices;
-    std::vector<AudioDeviceInfo> capture_devices;
+struct AudioDevices {
+    std::vector<AudioDeviceInfo> playback_devices_;
+    std::vector<AudioDeviceInfo> capture_devices_;
 };
 
-class AudioEngine
-{
-public:
+class AudioEngine {
+  public:
     AudioEngine();
     ~AudioEngine();
 
-    AudioEngine(const AudioEngine &) = delete;
-    AudioEngine &operator=(const AudioEngine &) = delete;
+    AudioEngine(const AudioEngine&) = delete;
+    AudioEngine& operator=(const AudioEngine&) = delete;
 
     bool init();
     void shutdown();
@@ -33,25 +30,35 @@ public:
     AudioDevices get_audio_devices();
     bool select_devices(int playback_device_index, int capture_device_index);
 
-    void set_frequency(float freq) { frequency_.store(freq, std::memory_order_relaxed); };
-    float get_frequency() const { return frequency_.load(std::memory_order_relaxed); };
+    void set_frequency(float freq) {
+        frequency_.store(freq, std::memory_order_relaxed);
+    };
+    float get_frequency() const {
+        return frequency_.load(std::memory_order_relaxed);
+    };
 
-    void set_volume(float volume) { volume_.store(volume, std::memory_order_relaxed); };
-    float get_volume() const { return volume_.load(std::memory_order_relaxed); };
+    void set_volume(float volume) {
+        volume_.store(volume, std::memory_order_relaxed);
+    };
+    float get_volume() const {
+        return volume_.load(std::memory_order_relaxed);
+    };
 
-    void copy_scope_buffer(float *out_target, size_t count);
+    void copy_scope_buffer(float* out_target, size_t count);
 
     static constexpr size_t SCOPE_SIZE = 512;
 
-private:
+  private:
     static constexpr float SAMPLE_RATE = 48000.0f;
     static constexpr float TWO_PI = 6.28318530717958647692f;
 
-    static void c_audio_callback(struct ma_device *pDevice, void *pOutput, const void *pInput, unsigned int frameCount);
-    void process_audio(float *output, const float *input, unsigned int frameCount);
+    static void c_audio_callback(struct ma_device* device, void* output,
+                                 const void* input, unsigned int frame_count);
+    void process_audio(float* output, const float* input,
+                       unsigned int frame_count);
 
     struct Impl;
-    Impl *impl_;
+    Impl* impl_;
 
     std::atomic<float> frequency_{440.0f};
     std::atomic<float> volume_{0.2f};
