@@ -4,7 +4,7 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 
-#include "audio_engine.hpp"
+#include "core/audio_engine.hpp"
 #include "gui/main_view.hpp"
 
 int main() {

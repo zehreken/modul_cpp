@@ -10,4 +10,4 @@ then run
 cmake --build build
 
 clang-tidy example
-clang-tidy -p cmake-build-ninja src/audio_engine.cpp
+clang-tidy -p cmake-build-ninja src/core/audio_engine.cpp

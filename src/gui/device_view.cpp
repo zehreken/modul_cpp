@@ -1,5 +1,5 @@
 #include "gui/device_view.hpp"
-#include "audio_engine.hpp"
+#include "core/audio_engine.hpp"
 #include "imgui.h"
 
 DeviceView::DeviceView(AudioEngine& audio_engine)
