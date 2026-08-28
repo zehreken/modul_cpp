@@ -13,9 +13,23 @@ struct AudioEngine::Impl {
     ma_device device_;
     bool is_device_initialized_{false};
     bool is_context_initialized_{false};
+    ma_pcm_rb rb_;
 };
 
-AudioEngine::AudioEngine() : impl_(new Impl()) {}
+AudioEngine::AudioEngine() : impl_(new Impl()) {
+    if (ma_pcm_rb_init(
+            ma_format_f32,
+            2,
+            AudioEngine::SCOPE_SIZE,
+            nullptr,
+            nullptr,
+            &impl_->rb_
+        ) == MA_SUCCESS) {
+        std::cout << "Successfully created ring buffer" << std::endl;
+    } else {
+        std::cout << "Failed to create ring buffer" << std::endl;
+    }
+}
 
 AudioEngine::~AudioEngine() {
     shutdown();
@@ -31,6 +45,7 @@ bool AudioEngine::init() {
 }
 
 void AudioEngine::shutdown() {
+    ma_pcm_rb_uninit(&impl_->rb_);
     if (impl_->is_device_initialized_) {
         ma_device_uninit(&impl_->device_);
         impl_->is_device_initialized_ = false;
@@ -50,9 +65,13 @@ AudioDevices AudioEngine::get_audio_devices() {
     ma_device_info* capture_infos;
     ma_uint32 capture_count;
 
-    if (ma_context_get_devices(&impl_->context_, &playback_infos,
-                               &playback_count, &capture_infos,
-                               &capture_count) == MA_SUCCESS) {
+    if (ma_context_get_devices(
+            &impl_->context_,
+            &playback_infos,
+            &playback_count,
+            &capture_infos,
+            &capture_count
+        ) == MA_SUCCESS) {
         for (ma_uint32 i = 0; i < playback_count; ++i) {
             auto info = playback_infos[i];
 
@@ -60,9 +79,9 @@ AudioDevices AudioEngine::get_audio_devices() {
             device_info.name_ = info.name;
             device_info.id_index_ = static_cast<int>(i);
             device_info.is_default_ = info.isDefault != 0;
-            if (ma_context_get_device_info(&impl_->context_,
-                                           ma_device_type_playback, &info.id,
-                                           &info) == MA_SUCCESS) {
+            if (ma_context_get_device_info(
+                    &impl_->context_, ma_device_type_playback, &info.id, &info
+                ) == MA_SUCCESS) {
                 device_info.channels_ =
                     static_cast<int>(info.nativeDataFormats->channels);
                 device_info.format_ =
@@ -79,9 +98,9 @@ AudioDevices AudioEngine::get_audio_devices() {
             device_info.name_ = info.name;
             device_info.id_index_ = static_cast<int>(i);
             device_info.is_default_ = info.isDefault != 0;
-            if (ma_context_get_device_info(&impl_->context_,
-                                           ma_device_type_capture, &info.id,
-                                           &info) == MA_SUCCESS) {
+            if (ma_context_get_device_info(
+                    &impl_->context_, ma_device_type_capture, &info.id, &info
+                ) == MA_SUCCESS) {
                 device_info.channels_ =
                     static_cast<int>(info.nativeDataFormats->channels);
                 device_info.format_ =
@@ -97,8 +116,9 @@ AudioDevices AudioEngine::get_audio_devices() {
     return devices;
 }
 
-bool AudioEngine::select_devices(int playback_device_index,
-                                 int capture_device_index) {
+bool AudioEngine::select_devices(
+    int playback_device_index, int capture_device_index
+) {
     if (impl_->is_device_initialized_) {
         ma_device_uninit(&impl_->device_);
         impl_->is_device_initialized_ = false;
@@ -110,7 +130,7 @@ bool AudioEngine::select_devices(int playback_device_index,
     config.capture.format = ma_format_f32;
     config.capture.channels = 2;
     config.sampleRate = static_cast<ma_uint32>(SAMPLE_RATE);
-    config.periodSizeInFrames = 128;
+    config.periodSizeInFrames = SCOPE_SIZE; // periodSizeInFrames <> latency
     config.dataCallback = AudioEngine::c_audio_callback;
     config.pUserData = this;
 
@@ -118,9 +138,13 @@ bool AudioEngine::select_devices(int playback_device_index,
     ma_uint32 playback_count;
     ma_device_info* capture_infos;
     ma_uint32 capture_count;
-    if (ma_context_get_devices(&impl_->context_, &playback_infos,
-                               &playback_count, &capture_infos,
-                               &capture_count) != MA_SUCCESS) {
+    if (ma_context_get_devices(
+            &impl_->context_,
+            &playback_infos,
+            &playback_count,
+            &capture_infos,
+            &capture_count
+        ) != MA_SUCCESS) {
         return false;
     }
     if (playback_device_index >= 0 && playback_device_index < playback_count) {
@@ -140,18 +164,61 @@ bool AudioEngine::select_devices(int playback_device_index,
     return ma_device_start(&impl_->device_) == MA_SUCCESS;
 }
 
-void AudioEngine::c_audio_callback(ma_device* device, void* output,
-                                   const void* input, ma_uint32 frame_count) {
+void AudioEngine::c_audio_callback(
+    ma_device* device, void* output, const void* input, ma_uint32 frame_count
+) {
     auto* engine = static_cast<AudioEngine*>(device->pUserData);
-    engine->process_audio(static_cast<float*>(output),
-                          static_cast<const float*>(input), frame_count);
+    engine->process_audio(
+        device,
+        static_cast<float*>(output),
+        static_cast<const float*>(input),
+        frame_count
+    );
 }
 
-void AudioEngine::process_audio(float* output, const float* input,
-                                unsigned int frame_count) {
+void AudioEngine::process_audio(
+    ma_device* device,
+    float* output,
+    const float* input,
+    unsigned int frame_count
+) {
     float freq = frequency_.load(std::memory_order_relaxed);
     float vol = volume_.load(std::memory_order_relaxed);
     float phase_incr = (TWO_PI * freq) / SAMPLE_RATE;
+
+    ma_result result;
+    ma_uint32 frames_written;
+    frames_written = 0;
+    while (frames_written < frame_count) {
+        void* write_buffer;
+        ma_uint32 frames_to_write = frame_count - frames_written;
+
+        result = ma_pcm_rb_acquire_write(
+            &impl_->rb_, &frames_to_write, &write_buffer
+        );
+        if (result != MA_SUCCESS) {
+            break;
+        }
+        if (frames_to_write == 0) {
+            break;
+        }
+        // std::cout << frame_count << " " << fc << std::endl;
+        ma_copy_pcm_frames(
+            write_buffer,
+            ma_offset_pcm_frames_const_ptr_f32(
+                (const float*)input, frames_written, device->capture.channels
+            ),
+            frames_to_write,
+            device->capture.format,
+            device->capture.channels
+        );
+        ma_result result = ma_pcm_rb_commit_write(&impl_->rb_, frames_to_write);
+        if (result != MA_SUCCESS) {
+            break;
+        }
+        frames_written += frames_to_write;
+        // std::cout << "write r2: " << r2 << std::endl;
+    }
 
     for (unsigned int i = 0; i < frame_count; ++i) {
         float sample = std::sin(phase_) * vol;
@@ -165,8 +232,8 @@ void AudioEngine::process_audio(float* output, const float* input,
         *output++ = out_left;
         *output++ = out_right;
 
-        scope_buffer_[scope_write_index_] = out_left;
-        scope_write_index_ = (scope_write_index_ + 1) % SCOPE_SIZE;
+        // scope_buffer_[scope_write_index_] = out_left;
+        // scope_write_index_ = (scope_write_index_ + 1) % SCOPE_SIZE;
 
         phase_ += phase_incr;
         if (phase_ >= TWO_PI)
@@ -175,6 +242,21 @@ void AudioEngine::process_audio(float* output, const float* input,
 }
 
 void AudioEngine::copy_scope_buffer(float* out_target, size_t count) {
-    size_t copy_size = std::min(count, SCOPE_SIZE);
-    std::memcpy(out_target, scope_buffer_, copy_size * sizeof(float));
+    // TODO: This is currently broken, need to separate
+    // L and R channel and also memcpy arithmetic is wrong
+    void* read_buffer;
+    ma_result result;
+    ma_uint32 frame_count = static_cast<ma_uint32>(count);
+    result = ma_pcm_rb_acquire_read(&impl_->rb_, &frame_count, &read_buffer);
+    if (result != MA_SUCCESS) {
+        return;
+    }
+    std::memcpy(out_target, read_buffer, frame_count * sizeof(float));
+    result = ma_pcm_rb_commit_read(&impl_->rb_, frame_count);
+    if (result != MA_SUCCESS) {
+        return;
+    }
+    // std::cout << "read r2: " << r2 << std::endl;
+    // size_t copy_size = std::min(count, SCOPE_SIZE);
+    // std::memcpy(out_target, scope_buffer_, copy_size * sizeof(float));
 }

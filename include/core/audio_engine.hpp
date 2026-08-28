@@ -57,7 +57,7 @@ class AudioEngine {
 
     static void c_audio_callback(struct ma_device* device, void* output,
                                  const void* input, unsigned int frame_count);
-    void process_audio(float* output, const float* input,
+    void process_audio(ma_device* device, float* output, const float* input,
                        unsigned int frame_count);
 
     struct Impl;
