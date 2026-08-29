@@ -5,7 +5,18 @@
 #include <iostream>
 
 #include "core/audio_engine.hpp"
+#include "core/audio_system.hpp"
 #include "gui/main_view.hpp"
+
+void key_callback(
+    GLFWwindow* window, int key, int scancode, int action, int mods
+) {
+    auto* audio_system =
+        static_cast<AudioSystem*>(glfwGetWindowUserPointer(window));
+    if (key == GLFW_KEY_T && action == GLFW_PRESS) {
+        audio_system->toggle_play_through();
+    }
+}
 
 int main() {
     if (!glfwInit())
@@ -25,9 +36,12 @@ int main() {
         return -1;
     }
 
-    float scaleX, scaleY;
-    glfwGetWindowContentScale(window, &scaleX,
-                              &scaleY); // It is 1.5 for my screen
+    float scale_x, scale_y;
+    glfwGetWindowContentScale(
+        window,
+        &scale_x,
+        &scale_y
+    ); // It is 1.5 for my screen
     glfwMakeContextCurrent(window);
     glfwSwapInterval(1); // Enable vsync
 
@@ -35,14 +49,19 @@ int main() {
     ImGui::CreateContext();
     ImGui::StyleColorsDark();
     ImGuiStyle& style = ImGui::GetStyle();
-    style.ScaleAllSizes(scaleX);
-    style.FontScaleDpi = scaleX;
+    style.ScaleAllSizes(scale_x);
+    style.FontScaleDpi = scale_x;
 
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 150");
 
+    AudioSystem audio_system{2048};
     AudioEngine audio_engine;
     audio_engine.init();
+
+    // Keyboard input
+    glfwSetKeyCallback(window, key_callback);
+    glfwSetWindowUserPointer(window, &audio_system);
 
     MainView main_view(audio_engine);
 
