@@ -5,14 +5,13 @@
 #include <iostream>
 
 #include "core/audio_engine.hpp"
-#include "core/audio_system.hpp"
 #include "gui/main_view.hpp"
 
 void key_callback(
     GLFWwindow* window, int key, int scancode, int action, int mods
 ) {
     auto* audio_system =
-        static_cast<AudioSystem*>(glfwGetWindowUserPointer(window));
+        static_cast<AudioEngine*>(glfwGetWindowUserPointer(window));
     if (key == GLFW_KEY_T && action == GLFW_PRESS) {
         audio_system->toggle_play_through();
     }
@@ -55,13 +54,13 @@ int main() {
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 150");
 
-    AudioSystem audio_system{2048};
     AudioEngine audio_engine;
     audio_engine.init();
 
     // Keyboard input
     glfwSetKeyCallback(window, key_callback);
-    glfwSetWindowUserPointer(window, &audio_system);
+    glfwSetWindowUserPointer(window, &audio_engine);
+    double elapsed_time = glfwGetTime();
 
     MainView main_view(audio_engine);
 
@@ -72,6 +71,9 @@ int main() {
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
 
+        // FIX: Calculate delta time, unused atm
+        double delta_time = glfwGetTime() - elapsed_time;
+        elapsed_time = glfwGetTime();
         main_view.render(audio_engine);
 
         ImGui::Render();

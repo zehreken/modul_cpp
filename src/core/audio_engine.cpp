@@ -223,8 +223,8 @@ void AudioEngine::process_audio(
     for (unsigned int i = 0; i < frame_count; ++i) {
         float sample = std::sin(phase_) * vol;
 
-        float in_left = input ? *input++ : 0.0f;
-        float in_right = input ? *input++ : 0.0f;
+        float in_left = input && can_play_through_ ? *input++ : 0.0f;
+        float in_right = input && can_play_through_ ? *input++ : 0.0f;
 
         float out_left = (in_left * 0.5f) + (sample * 0.5f);
         float out_right = (in_right * 0.5f) + (sample * 0.5f);
@@ -240,6 +240,12 @@ void AudioEngine::process_audio(
             phase_ -= TWO_PI;
     }
 }
+
+void AudioEngine::toggle_play_through() {
+    can_play_through_ = !can_play_through_;
+}
+
+bool AudioEngine::can_play_through() { return can_play_through_; }
 
 void AudioEngine::copy_scope_buffer(float* out_target, size_t count) {
     // TODO: This is currently broken, need to separate

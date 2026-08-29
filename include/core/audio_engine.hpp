@@ -47,6 +47,9 @@ class AudioEngine {
         return volume_.load(std::memory_order_relaxed);
     };
 
+    void toggle_play_through();
+    bool can_play_through();
+
     void copy_scope_buffer(float* out_target, size_t count);
 
     static constexpr size_t SCOPE_SIZE = 512;
@@ -55,10 +58,18 @@ class AudioEngine {
     static constexpr float SAMPLE_RATE = 48000.0f;
     static constexpr float TWO_PI = 6.28318530717958647692f;
 
-    static void c_audio_callback(struct ma_device* device, void* output,
-                                 const void* input, unsigned int frame_count);
-    void process_audio(ma_device* device, float* output, const float* input,
-                       unsigned int frame_count);
+    static void c_audio_callback(
+        struct ma_device* device,
+        void* output,
+        const void* input,
+        unsigned int frame_count
+    );
+    void process_audio(
+        ma_device* device,
+        float* output,
+        const float* input,
+        unsigned int frame_count
+    );
 
     struct Impl;
     Impl* impl_;
@@ -69,4 +80,6 @@ class AudioEngine {
 
     float scope_buffer_[SCOPE_SIZE]{0.0f};
     size_t scope_write_index_{0};
+
+    bool can_play_through_;
 };
