@@ -30,9 +30,6 @@ AudioEngine::AudioEngine(size_t length)
     } else {
         std::cout << "Failed to create ring buffer" << std::endl;
     }
-    can_play_through_ = false;
-    can_record_ = false;
-    audio_index_ = 0;
 }
 
 AudioEngine::~AudioEngine() {
@@ -258,6 +255,7 @@ void AudioEngine::toggle_play_through() {
 
 bool AudioEngine::can_play_through() { return can_play_through_; }
 
+// When load operation is not used, it is seq_cst load
 void AudioEngine::toggle_record() { can_record_ = !can_record_; }
 
 bool AudioEngine::can_record() { return can_record_; }

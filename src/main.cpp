@@ -2,6 +2,7 @@
 #include "imgui_impl_glfw.h"
 #include "imgui_impl_opengl3.h"
 #include <GLFW/glfw3.h>
+#include <glad/glad.h>
 #include <iostream>
 
 #include "core/audio_engine.hpp"
@@ -24,12 +25,10 @@ int main() {
     if (!glfwInit())
         return -1;
 
-#if __APPLE__
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-#endif
 
     GLFWwindow* window =
         glfwCreateWindow(1024, 600, "modul ❤", nullptr, nullptr);
@@ -45,6 +44,10 @@ int main() {
         &scale_y
     ); // It is 1.5 for my screen
     glfwMakeContextCurrent(window);
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
+        std::cerr << "Failed to initialize GLAD\n";
+        return -1;
+    }
     glfwSwapInterval(1); // Enable vsync
 
     IMGUI_CHECKVERSION();

@@ -84,13 +84,14 @@ class AudioEngine {
     std::atomic<float> volume_{0.2f};
     float phase_{0.0};
 
-    size_t audio_index_;
+    size_t audio_index_{0};
 
     float scope_buffer_[SCOPE_SIZE]{0.0f};
     size_t scope_write_index_{0};
 
     Tape recording_tape_;
 
-    bool can_play_through_;
-    bool can_record_;
+    std::atomic<bool> can_play_through_{false};
+    std::atomic<bool> can_record_{false};
+    std::atomic<bool> can_metronome_run_{false};
 };

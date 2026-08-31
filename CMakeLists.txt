@@ -43,7 +43,18 @@ target_include_directories(imgui PUBLIC
 # our app (transitively linked, so we don't list glfw again below).
 target_link_libraries(imgui PUBLIC glfw)
 
-# 4. Define the executable target — just our own sources now.
+# 4. Build glad (vendored GL loader) as its own target, so this generated C
+#    stays out of our own source tree and compile flags.
+add_library(glad STATIC external/glad/src/glad.c)
+
+# PUBLIC so <glad/glad.h> (and the <KHR/khrplatform.h> it includes) reach
+# anything linking glad, i.e. the app.
+target_include_directories(glad PUBLIC external/glad/include)
+
+# glad dlopen()s libGL on Unix; empty on Windows, where it uses LoadLibraryW.
+target_link_libraries(glad PRIVATE ${CMAKE_DL_LIBS})
+
+# 5. Define the executable target — just our own sources now.
 add_executable(modul_app
     src/main.cpp
     src/core/audio_engine.cpp
@@ -53,12 +64,15 @@ add_executable(modul_app
     src/gui/scope_view.cpp
 )
 
-# 5. Set include paths (imgui's come through the linked target)
+# 6. Set include paths (imgui's come through the linked target)
 target_include_directories(modul_app PRIVATE
     include
 )
 
-# 6. Windows: stop windows.h from defining min/max macros (breaks std::min)
+# 7. Keep GLFW out of the GL header business — glad declares the GL API instead.
+target_compile_definitions(modul_app PRIVATE GLFW_INCLUDE_NONE)
+
+# 8. Windows: stop windows.h from defining min/max macros (breaks std::min)
 if(WIN32)
     target_compile_definitions(modul_app PRIVATE NOMINMAX WIN32_LEAN_AND_MEAN)
     # The MSVC STL hard-errors (STL1000) when parsed by Clang older than 19.
@@ -68,11 +82,11 @@ if(WIN32)
     target_compile_definitions(modul_app PRIVATE _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH)
 endif()
 
-# 7. Link libraries cross-platform (glfw arrives transitively via imgui)
+# 9. Link libraries cross-platform (glfw arrives transitively via imgui)
 if(APPLE)
-    target_link_libraries(modul_app PRIVATE imgui "-framework OpenGL" "-framework Cocoa" "-framework IOKit" "-framework CoreVideo")
+    target_link_libraries(modul_app PRIVATE imgui glad "-framework OpenGL" "-framework Cocoa" "-framework IOKit" "-framework CoreVideo")
 elseif(WIN32)
-    target_link_libraries(modul_app PRIVATE imgui opengl32)
+    target_link_libraries(modul_app PRIVATE imgui glad opengl32)
 else()
-    target_link_libraries(modul_app PRIVATE imgui GL pthread dl)
+    target_link_libraries(modul_app PRIVATE imgui glad GL pthread dl)
 endif()
