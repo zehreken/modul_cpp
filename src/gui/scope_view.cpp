@@ -7,8 +7,9 @@ void ScopeView::render(AudioEngine& audio_engine) {
 
     float freq = audio_engine.get_frequency();
 
-    if (ImGui::SliderFloat("Frequency (Hz)", &freq, 20.0f, 2000.0f,
-                           "%.1f Hz")) {
+    if (ImGui::SliderFloat(
+            "Frequency (Hz)", &freq, 20.0f, 2000.0f, "%.1f Hz"
+        )) {
         audio_engine.set_frequency(freq);
     }
 
@@ -22,8 +23,32 @@ void ScopeView::render(AudioEngine& audio_engine) {
     ImGui::Text("Oscilloscope Output:");
     float display_buffer[AudioEngine::SCOPE_SIZE]{0.0f};
     audio_engine.copy_scope_buffer(display_buffer, AudioEngine::SCOPE_SIZE);
-    ImGui::PlotLines("##Waveform", display_buffer, AudioEngine::SCOPE_SIZE, 0,
-                     nullptr, -1.0f, 1.0f, ImVec2(0, 150));
+    ImGui::PlotLines(
+        "##Waveform",
+        display_buffer,
+        AudioEngine::SCOPE_SIZE,
+        0,
+        nullptr,
+        -1.0f,
+        1.0f,
+        ImVec2(0, 150)
+    );
+
+    ImGui::Separator();
+
+    ImGui::Text("Left Channel:");
+    float recording_buffer[48000]{0.0f};
+    audio_engine.copy_recording(recording_buffer, 48000);
+    ImGui::PlotLines(
+        "##Recording",
+        recording_buffer,
+        AudioEngine::SCOPE_SIZE,
+        0,
+        nullptr,
+        -1.0f,
+        1.0f,
+        ImVec2(0, 150)
+    );
 
     ImGui::End();
 }

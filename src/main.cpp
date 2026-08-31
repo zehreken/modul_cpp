@@ -15,6 +15,9 @@ void key_callback(
     if (key == GLFW_KEY_T && action == GLFW_PRESS) {
         audio_system->toggle_play_through();
     }
+    if (key == GLFW_KEY_R && action == GLFW_PRESS) {
+        audio_system->toggle_record();
+    }
 }
 
 int main() {
@@ -54,7 +57,7 @@ int main() {
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 150");
 
-    AudioEngine audio_engine;
+    AudioEngine audio_engine{192000};
     audio_engine.init();
 
     // Keyboard input

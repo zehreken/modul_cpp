@@ -15,6 +15,12 @@ void MainView::render(AudioEngine& audio_engine) {
             }
             ImGui::EndMenu();
         }
+        if (audio_engine.can_record()) {
+            ImGui::Text("Recording!");
+        }
+        if (audio_engine.can_play_through()) {
+            ImGui::Text("Playing through");
+        }
         ImGui::EndMainMenuBar();
     }
 

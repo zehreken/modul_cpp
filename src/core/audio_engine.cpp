@@ -16,7 +16,8 @@ struct AudioEngine::Impl {
     ma_pcm_rb rb_;
 };
 
-AudioEngine::AudioEngine() : impl_(new Impl()) {
+AudioEngine::AudioEngine(size_t length)
+    : impl_(new Impl()), recording_tape_(length) {
     if (ma_pcm_rb_init(
             ma_format_f32,
             2,
@@ -29,6 +30,9 @@ AudioEngine::AudioEngine() : impl_(new Impl()) {
     } else {
         std::cout << "Failed to create ring buffer" << std::endl;
     }
+    can_play_through_ = false;
+    can_record_ = false;
+    audio_index_ = 0;
 }
 
 AudioEngine::~AudioEngine() {
@@ -221,6 +225,7 @@ void AudioEngine::process_audio(
     }
 
     for (unsigned int i = 0; i < frame_count; ++i) {
+        audio_index_++;
         float sample = std::sin(phase_) * vol;
 
         float in_left = input && can_play_through_ ? *input++ : 0.0f;
@@ -228,6 +233,12 @@ void AudioEngine::process_audio(
 
         float out_left = (in_left * 0.5f) + (sample * 0.5f);
         float out_right = (in_right * 0.5f) + (sample * 0.5f);
+
+        if (can_record_) {
+            recording_tape_.write(in_left);
+        } else {
+            out_left += recording_tape_.read(audio_index_);
+        }
 
         *output++ = out_left;
         *output++ = out_right;
@@ -247,6 +258,10 @@ void AudioEngine::toggle_play_through() {
 
 bool AudioEngine::can_play_through() { return can_play_through_; }
 
+void AudioEngine::toggle_record() { can_record_ = !can_record_; }
+
+bool AudioEngine::can_record() { return can_record_; }
+
 void AudioEngine::copy_scope_buffer(float* out_target, size_t count) {
     // TODO: This is currently broken, need to separate
     // L and R channel and also memcpy arithmetic is wrong
@@ -265,4 +280,10 @@ void AudioEngine::copy_scope_buffer(float* out_target, size_t count) {
     // std::cout << "read r2: " << r2 << std::endl;
     // size_t copy_size = std::min(count, SCOPE_SIZE);
     // std::memcpy(out_target, scope_buffer_, copy_size * sizeof(float));
+}
+
+void AudioEngine::copy_recording(float* out_target, size_t count) {
+    for (size_t i = 0; i < count; ++i) {
+        *out_target++ = recording_tape_.read(i);
+    }
 }

@@ -5,6 +5,8 @@
 #include <string>
 #include <vector>
 
+#include "core/tape.hpp"
+
 struct AudioDeviceInfo {
     std::string name_;
     int channels_;
@@ -21,7 +23,7 @@ struct AudioDevices {
 
 class AudioEngine {
   public:
-    AudioEngine();
+    explicit AudioEngine(size_t length);
     ~AudioEngine();
 
     AudioEngine(const AudioEngine&) = delete;
@@ -50,7 +52,11 @@ class AudioEngine {
     void toggle_play_through();
     bool can_play_through();
 
+    void toggle_record();
+    bool can_record();
+
     void copy_scope_buffer(float* out_target, size_t count);
+    void copy_recording(float* out_target, size_t count);
 
     static constexpr size_t SCOPE_SIZE = 512;
 
@@ -78,8 +84,13 @@ class AudioEngine {
     std::atomic<float> volume_{0.2f};
     float phase_{0.0};
 
+    size_t audio_index_;
+
     float scope_buffer_[SCOPE_SIZE]{0.0f};
     size_t scope_write_index_{0};
 
+    Tape recording_tape_;
+
     bool can_play_through_;
+    bool can_record_;
 };
