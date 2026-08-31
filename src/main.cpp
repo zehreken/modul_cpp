@@ -7,19 +7,12 @@
 
 #include "core/audio_engine.hpp"
 #include "gui/main_view.hpp"
+#include "renderer/scene.hpp"
 
+void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void key_callback(
     GLFWwindow* window, int key, int scancode, int action, int mods
-) {
-    auto* audio_system =
-        static_cast<AudioEngine*>(glfwGetWindowUserPointer(window));
-    if (key == GLFW_KEY_T && action == GLFW_PRESS) {
-        audio_system->toggle_play_through();
-    }
-    if (key == GLFW_KEY_R && action == GLFW_PRESS) {
-        audio_system->toggle_record();
-    }
-}
+);
 
 int main() {
     if (!glfwInit())
@@ -28,11 +21,14 @@ int main() {
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+#ifdef __APPLE__
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GLFW_TRUE);
+#endif
 
     GLFWwindow* window =
         glfwCreateWindow(1024, 600, "modul ❤", nullptr, nullptr);
     if (!window) {
+        std::cerr << "Failed to create GLFW window\n";
         glfwTerminate();
         return -1;
     }
@@ -69,6 +65,7 @@ int main() {
     double elapsed_time = glfwGetTime();
 
     MainView main_view(audio_engine);
+    Scene scene;
 
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
@@ -86,8 +83,10 @@ int main() {
         int display_w, display_h;
         glfwGetFramebufferSize(window, &display_w, &display_h);
         glViewport(0, 0, display_w, display_h);
-        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+        glClearColor(1.0f, 0.0f, 0.33f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
+
+        scene.render();
 
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         glfwSwapBuffers(window);
@@ -102,4 +101,21 @@ int main() {
     glfwTerminate();
 
     return 0;
+}
+
+void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
+    glViewport(0, 0, width, height);
+}
+
+void key_callback(
+    GLFWwindow* window, int key, int scancode, int action, int mods
+) {
+    auto* audio_system =
+        static_cast<AudioEngine*>(glfwGetWindowUserPointer(window));
+    if (key == GLFW_KEY_T && action == GLFW_PRESS) {
+        audio_system->toggle_play_through();
+    }
+    if (key == GLFW_KEY_R && action == GLFW_PRESS) {
+        audio_system->toggle_record();
+    }
 }
