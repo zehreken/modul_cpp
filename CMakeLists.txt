@@ -54,6 +54,18 @@ target_include_directories(glad PUBLIC external/glad/include)
 # glad dlopen()s libGL on Unix; empty on Windows, where it uses LoadLibraryW.
 target_link_libraries(glad PRIVATE ${CMAKE_DL_LIBS})
 
+# 4b. dj_fft (vendored, header-only FFT). INTERFACE: nothing to compile, it
+#     just hands its include path to whoever links it.
+#
+#     Note we deliberately never define DJ_FFT_IMPLEMENTATION — that section
+#     is only for dj_fft's GPU path, and it typedefs GLchar/GLenum/... itself,
+#     which would clash with glad. The CPU fft1d/2d/3d templates are fully
+#     defined in the header and need no such define.
+add_library(dj_fft INTERFACE)
+
+# The header is included as <dj_fft/dj_fft.h>, so external/ is the search root.
+target_include_directories(dj_fft INTERFACE external)
+
 # 5. Define the executable target — just our own sources now.
 add_executable(modul_app
     src/main.cpp
@@ -85,9 +97,9 @@ endif()
 
 # 9. Link libraries cross-platform (glfw arrives transitively via imgui)
 if(APPLE)
-    target_link_libraries(modul_app PRIVATE imgui glad "-framework OpenGL" "-framework Cocoa" "-framework IOKit" "-framework CoreVideo")
+    target_link_libraries(modul_app PRIVATE imgui glad dj_fft "-framework OpenGL" "-framework Cocoa" "-framework IOKit" "-framework CoreVideo")
 elseif(WIN32)
-    target_link_libraries(modul_app PRIVATE imgui glad opengl32)
+    target_link_libraries(modul_app PRIVATE imgui glad dj_fft opengl32)
 else()
-    target_link_libraries(modul_app PRIVATE imgui glad GL pthread dl)
+    target_link_libraries(modul_app PRIVATE imgui glad dj_fft GL pthread dl)
 endif()
