@@ -90,6 +90,7 @@ class AudioEngine {
     size_t scope_write_index_{0};
 
     Tape recording_tape_;
+    Tape tapes_[8];
 
     std::atomic<bool> can_play_through_{false};
     std::atomic<bool> can_record_{false};

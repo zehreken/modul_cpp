@@ -4,7 +4,7 @@
 
 class Tape {
   public:
-    explicit Tape(size_t length);
+    Tape(size_t length);
     float get_volume();
     float get_pan();
     void toggle_mute();

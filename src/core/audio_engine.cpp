@@ -17,7 +17,8 @@ struct AudioEngine::Impl {
 };
 
 AudioEngine::AudioEngine(size_t length)
-    : impl_(new Impl()), recording_tape_(length) {
+    : impl_(new Impl()), recording_tape_(length),
+      tapes_{length, length, length, length, length, length, length, length} {
     if (ma_pcm_rb_init(
             ma_format_f32,
             2,
