@@ -223,19 +223,28 @@ void AudioEngine::process_audio(
 
     for (unsigned int i = 0; i < frame_count; ++i) {
         audio_index_++;
-        float sample = std::sin(phase_) * vol;
+        float sample = std::sin(phase_);
 
-        float in_left = input && can_play_through_ ? *input++ : 0.0f;
-        float in_right = input && can_play_through_ ? *input++ : 0.0f;
+        float in_left = input ? *input++ : 0.0f;
+        float in_right = input ? *input++ : 0.0f;
 
-        float out_left = (in_left * 0.5f) + (sample * 0.5f);
-        float out_right = (in_right * 0.5f) + (sample * 0.5f);
+        float out_left = sample;
+        float out_right = sample;
+        if (can_play_through_) {
+            out_left = (out_left + in_left) * 0.5f;
+            out_right = (out_right + in_right) * 0.5f;
+        }
 
         if (can_record_) {
-            recording_tape_.write(in_left);
+            recording_tape_.write((in_left + in_right) * 0.5f);
         } else {
-            out_left += recording_tape_.read(audio_index_);
+            float tape_value = recording_tape_.read(audio_index_);
+            out_left = (out_left + tape_value) * 0.5f;
+            out_right = (out_right + tape_value) * 0.5f;
         }
+
+        out_left = out_left * vol;
+        out_right = out_right * vol;
 
         *output++ = out_left;
         *output++ = out_right;
