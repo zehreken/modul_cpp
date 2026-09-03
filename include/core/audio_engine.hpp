@@ -58,6 +58,9 @@ class AudioEngine {
     void copy_scope_buffer(float* out_target, size_t count);
     void copy_recording(float* out_target, size_t count);
 
+    void set_selected_tape(size_t id);
+    size_t get_selected_tape();
+
     static constexpr size_t SCOPE_SIZE = 512;
 
   private:
@@ -95,4 +98,5 @@ class AudioEngine {
     std::atomic<bool> can_play_through_{false};
     std::atomic<bool> can_record_{false};
     std::atomic<bool> can_metronome_run_{false};
+    std::atomic<size_t> selected_tape_{0};
 };

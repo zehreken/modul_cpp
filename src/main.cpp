@@ -110,12 +110,36 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
 void key_callback(
     GLFWwindow* window, int key, int scancode, int action, int mods
 ) {
-    auto* audio_system =
+    auto* audio_engine =
         static_cast<AudioEngine*>(glfwGetWindowUserPointer(window));
     if (key == GLFW_KEY_T && action == GLFW_PRESS) {
-        audio_system->toggle_play_through();
+        audio_engine->toggle_play_through();
     }
     if (key == GLFW_KEY_R && action == GLFW_PRESS) {
-        audio_system->toggle_record();
+        audio_engine->toggle_record();
+    }
+    if (key == GLFW_KEY_1 && action == GLFW_PRESS) {
+        audio_engine->set_selected_tape(0);
+    }
+    if (key == GLFW_KEY_2 && action == GLFW_PRESS) {
+        audio_engine->set_selected_tape(1);
+    }
+    if (key == GLFW_KEY_3 && action == GLFW_PRESS) {
+        audio_engine->set_selected_tape(2);
+    }
+    if (key == GLFW_KEY_4 && action == GLFW_PRESS) {
+        audio_engine->set_selected_tape(3);
+    }
+    if (key == GLFW_KEY_5 && action == GLFW_PRESS) {
+        audio_engine->set_selected_tape(4);
+    }
+    if (key == GLFW_KEY_6 && action == GLFW_PRESS) {
+        audio_engine->set_selected_tape(5);
+    }
+    if (key == GLFW_KEY_7 && action == GLFW_PRESS) {
+        audio_engine->set_selected_tape(6);
+    }
+    if (key == GLFW_KEY_8 && action == GLFW_PRESS) {
+        audio_engine->set_selected_tape(7);
     }
 }

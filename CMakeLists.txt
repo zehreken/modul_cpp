@@ -75,6 +75,7 @@ add_executable(modul_app
     src/gui/device_view.cpp
     src/gui/scope_view.cpp
     src/renderer/scene.cpp
+    src/gui/tapes_view.cpp
 )
 
 # 6. Set include paths (imgui's come through the linked target)

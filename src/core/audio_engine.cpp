@@ -237,9 +237,15 @@ void AudioEngine::process_audio(
         }
 
         if (can_record_) {
-            recording_tape_.write((in_left + in_right) * 0.5f);
+            // recording_tape_.write((in_left + in_right) * 0.5f);
+            tapes_[selected_tape_].write((in_left + in_right) * 0.5f);
         } else {
-            float tape_value = recording_tape_.read(audio_index_);
+            float tape_value = 0.0f;
+            for (Tape& tape : tapes_) {
+                tape_value += tape.read(audio_index_);
+            }
+            tape_value = tape_value * 0.125f;
+            // float tape_value = recording_tape_.read(audio_index_);
             out_left = (out_left + tape_value) * 0.5f;
             out_right = (out_right + tape_value) * 0.5f;
         }
@@ -294,4 +300,12 @@ void AudioEngine::copy_recording(float* out_target, size_t count) {
     for (size_t i = 0; i < count; ++i) {
         *out_target++ = recording_tape_.read(i);
     }
+}
+
+void AudioEngine::set_selected_tape(size_t id) {
+    selected_tape_.store(id, std::memory_order_relaxed);
+}
+
+size_t AudioEngine::get_selected_tape() {
+    return selected_tape_.load(std::memory_order_relaxed);
 }
