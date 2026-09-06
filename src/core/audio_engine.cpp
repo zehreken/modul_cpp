@@ -242,9 +242,8 @@ void AudioEngine::process_audio(
         } else {
             float tape_value = 0.0f;
             for (Tape& tape : tapes_) {
-                tape_value += tape.read(audio_index_);
+                tape_value += tape.read(audio_index_) * tape.get_volume();
             }
-            tape_value = tape_value * 0.125f;
             // float tape_value = recording_tape_.read(audio_index_);
             out_left = (out_left + tape_value) * 0.5f;
             out_right = (out_right + tape_value) * 0.5f;
@@ -301,6 +300,8 @@ void AudioEngine::copy_recording(float* out_target, size_t count) {
         *out_target++ = recording_tape_.read(i);
     }
 }
+
+Tape& AudioEngine::get_tape(size_t id) { return tapes_[id]; }
 
 void AudioEngine::set_selected_tape(size_t id) {
     selected_tape_.store(id, std::memory_order_relaxed);

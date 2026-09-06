@@ -1,9 +1,17 @@
 #include "core/tape.hpp"
 // #include <iostream>
 
-Tape::Tape(size_t length) : audio_(length) { record_index_ = 0; }
+Tape::Tape(size_t length) : audio_(length) {
+    volume_ = 1.0f;
+    pan_ = 0.0f;
+    is_muted_ = false;
+    is_solo_ = false;
+    record_index_ = 0;
+}
 
 float Tape::get_volume() { return is_muted_ ? 0.0f : volume_; }
+
+void Tape::set_volume(float vol) { volume_ = vol; }
 
 float Tape::get_pan() { return pan_; }
 

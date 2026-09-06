@@ -6,6 +6,7 @@ class Tape {
   public:
     Tape(size_t length);
     float get_volume();
+    void set_volume(float vol);
     float get_pan();
     void toggle_mute();
     void toggle_solo();

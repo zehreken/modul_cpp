@@ -57,6 +57,7 @@ class AudioEngine {
 
     void copy_scope_buffer(float* out_target, size_t count);
     void copy_recording(float* out_target, size_t count);
+    Tape& get_tape(size_t id);
 
     void set_selected_tape(size_t id);
     size_t get_selected_tape();
