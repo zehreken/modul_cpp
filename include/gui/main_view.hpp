@@ -1,8 +1,8 @@
 #pragma once
 
 #include "gui/device_view.hpp"
+#include "gui/mixer_view.hpp"
 #include "gui/scope_view.hpp"
-#include "gui/tapes_view.hpp"
 
 class AudioEngine; // Forward decleration
 
@@ -14,5 +14,5 @@ class MainView {
   private:
     DeviceView device_view_;
     ScopeView scope_view_;
-    TapesView tapes_view_;
+    MixerView mixer_view_;
 };

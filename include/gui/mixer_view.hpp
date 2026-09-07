@@ -2,7 +2,7 @@
 
 class AudioEngine; // Forward declaration
 
-class TapesView {
+class MixerView {
   public:
     void render(AudioEngine& audio_engine);
 
