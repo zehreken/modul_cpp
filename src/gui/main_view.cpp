@@ -4,9 +4,11 @@
 MainView::MainView(AudioEngine& audio_engine) : device_view_(audio_engine) {}
 
 void MainView::render(AudioEngine& audio_engine) {
+    bool show_new_project_modal = false;
     if (ImGui::BeginMainMenuBar()) {
         if (ImGui::BeginMenu("File")) {
             if (ImGui::MenuItem("New", "Ctrl + N")) {
+                show_new_project_modal = true;
             }
             if (ImGui::MenuItem("Open", "Ctrl + O")) {
             }
@@ -21,6 +23,24 @@ void MainView::render(AudioEngine& audio_engine) {
             ImGui::Text("Playing through");
         }
         ImGui::EndMainMenuBar();
+    }
+
+    if (show_new_project_modal) {
+        ImGui::OpenPopup("New Project");
+    }
+    if (ImGui::BeginPopupModal(
+            "New Project", nullptr, ImGuiWindowFlags_AlwaysAutoResize
+        )) {
+        ImGui::Text("Lorem ipsum");
+        ImGui::Separator();
+        if (ImGui::Button("OK")) {
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::SameLine();
+        if (ImGui::Button("Cancel")) {
+            ImGui::CloseCurrentPopup();
+        }
+        ImGui::EndPopup();
     }
 
     device_view_.render(audio_engine);
