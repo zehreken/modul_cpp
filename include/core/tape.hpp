@@ -8,6 +8,7 @@ class Tape {
     float get_volume();
     void set_volume(float vol);
     float get_pan();
+    void set_pan(float pan);
     void toggle_mute();
     void toggle_solo();
     bool is_solo();

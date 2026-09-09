@@ -15,6 +15,8 @@ void Tape::set_volume(float vol) { volume_ = vol; }
 
 float Tape::get_pan() { return pan_; }
 
+void Tape::set_pan(float pan) { pan_ = pan; }
+
 void Tape::toggle_mute() { is_muted_ = !is_muted_; }
 
 void Tape::toggle_solo() { is_solo_ = !is_solo_; }
