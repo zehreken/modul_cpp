@@ -74,8 +74,9 @@ add_executable(modul_app
     src/gui/main_view.cpp
     src/gui/device_view.cpp
     src/gui/scope_view.cpp
-    src/renderer/scene.cpp
     src/gui/mixer_view.cpp
+    src/gui/metronome_view.cpp
+    src/renderer/scene.cpp
 )
 
 # 6. Set include paths (imgui's come through the linked target)

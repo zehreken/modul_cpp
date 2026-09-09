@@ -46,4 +46,5 @@ void MainView::render(AudioEngine& audio_engine) {
     device_view_.render(audio_engine);
     scope_view_.render(audio_engine);
     mixer_view_.render(audio_engine);
+    metronome_view_.render(audio_engine);
 }
