@@ -229,8 +229,12 @@ void AudioEngine::process_audio(
         float in_left = input ? *input++ : 0.0f;
         float in_right = input ? *input++ : 0.0f;
 
-        float out_left = sample;
-        float out_right = sample;
+        float out_left = 0.0f;
+        float out_right = 0.0f;
+        if (can_metronome_run_) {
+            out_left += sample;
+            out_right += sample;
+        }
         if (can_play_through_) {
             out_left = (out_left + in_left) * 0.5f;
             out_right = (out_right + in_right) * 0.5f;
@@ -278,6 +282,10 @@ bool AudioEngine::can_play_through() { return can_play_through_; }
 void AudioEngine::toggle_record() { can_record_ = !can_record_; }
 
 bool AudioEngine::can_record() { return can_record_; }
+
+void AudioEngine::toggle_metronome() {
+    can_metronome_run_ = !can_metronome_run_;
+}
 
 void AudioEngine::copy_scope_buffer(float* out_target, size_t count) {
     // TODO: This is currently broken, need to separate

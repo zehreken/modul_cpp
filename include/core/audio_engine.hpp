@@ -55,6 +55,8 @@ class AudioEngine {
     void toggle_record();
     bool can_record();
 
+    void toggle_metronome();
+
     void copy_scope_buffer(float* out_target, size_t count);
     void copy_recording(float* out_target, size_t count);
     Tape& get_tape(size_t id);
