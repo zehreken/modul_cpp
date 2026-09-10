@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 
+#include "core/metronome.hpp"
 #include "core/tape.hpp"
 
 struct AudioDeviceInfo {
@@ -86,11 +87,14 @@ class AudioEngine {
     struct Impl;
     Impl* impl_;
 
+    Metronome metronome_;
+
     std::atomic<float> frequency_{440.0f};
     std::atomic<float> volume_{0.2f};
     float phase_{0.0};
 
-    size_t audio_index_{0};
+    size_t frame_index_{0};
+    int beat_index_{0};
 
     float scope_buffer_[SCOPE_SIZE]{0.0f};
     size_t scope_write_index_{0};

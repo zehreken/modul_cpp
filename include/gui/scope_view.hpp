@@ -1,6 +1,6 @@
 #pragma once
 
-class AudioEngine; // Forward decleration
+class AudioEngine; // Forward declaration
 
 class ScopeView {
   public:

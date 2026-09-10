@@ -223,7 +223,7 @@ void AudioEngine::process_audio(
     }
 
     for (unsigned int i = 0; i < frame_count; ++i) {
-        audio_index_++;
+        frame_index_++;
         float sample = std::sin(phase_);
 
         float in_left = input ? *input++ : 0.0f;
@@ -247,12 +247,12 @@ void AudioEngine::process_audio(
             float tape_sum_left = 0.0f;
             float tape_sum_right = 0.0f;
             for (Tape& tape : tapes_) {
-                float v = tape.read(audio_index_) * tape.get_volume();
+                float v = tape.read(frame_index_) * tape.get_volume();
                 float half_pan = tape.get_pan() / 2.0f;
                 tape_sum_left += v * (0.5f - half_pan);
                 tape_sum_right += v * (0.5f + half_pan);
             }
-            // float tape_value = recording_tape_.read(audio_index_);
+            // float tape_value = recording_tape_.read(frame_index_);
             out_left = (out_left + tape_sum_left) * 0.5f;
             out_right = (out_right + tape_sum_right) * 0.5f;
         }

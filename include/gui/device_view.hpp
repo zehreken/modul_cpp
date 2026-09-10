@@ -2,7 +2,7 @@
 
 #include "core/audio_engine.hpp"
 
-class AudioEngine; // Forward decleration
+class AudioEngine; // Forward declaration
 
 class DeviceView {
   public:

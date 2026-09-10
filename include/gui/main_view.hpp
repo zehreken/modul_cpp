@@ -5,7 +5,7 @@
 #include "gui/mixer_view.hpp"
 #include "gui/scope_view.hpp"
 
-class AudioEngine; // Forward decleration
+class AudioEngine; // Forward declaration
 
 class MainView {
   public:
