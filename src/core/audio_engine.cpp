@@ -17,7 +17,7 @@ struct AudioEngine::Impl {
 };
 
 AudioEngine::AudioEngine(size_t length)
-    : impl_(new Impl()), recording_tape_(length),
+    : impl_(new Impl()), recording_tape_(length), metronome_{120, 48000},
       tapes_{length, length, length, length, length, length, length, length} {
     if (ma_pcm_rb_init(
             ma_format_f32,
@@ -224,6 +224,7 @@ void AudioEngine::process_audio(
 
     for (unsigned int i = 0; i < frame_count; ++i) {
         frame_index_++;
+        metronome_.update(frame_index_);
         float sample = std::sin(phase_);
 
         float in_left = input ? *input++ : 0.0f;
@@ -231,7 +232,7 @@ void AudioEngine::process_audio(
 
         float out_left = 0.0f;
         float out_right = 0.0f;
-        if (can_metronome_run_) {
+        if (can_metronome_run_ && metronome_.can_beep()) {
             out_left += sample;
             out_right += sample;
         }

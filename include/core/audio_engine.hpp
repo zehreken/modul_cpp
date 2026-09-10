@@ -94,7 +94,6 @@ class AudioEngine {
     float phase_{0.0};
 
     size_t frame_index_{0};
-    int beat_index_{0};
 
     float scope_buffer_[SCOPE_SIZE]{0.0f};
     size_t scope_write_index_{0};
