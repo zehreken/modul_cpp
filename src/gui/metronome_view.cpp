@@ -17,10 +17,5 @@ void MetronomeView::render(AudioEngine& audio_engine) {
         audio_engine.set_frequency(freq);
     }
 
-    float vol = audio_engine.get_volume();
-    if (ImGui::SliderFloat("Volume", &vol, 0.0f, 1.0f, "%.2f")) {
-        audio_engine.set_volume(vol);
-    }
-
     ImGui::End();
 }

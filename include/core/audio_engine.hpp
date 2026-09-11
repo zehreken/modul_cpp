@@ -44,10 +44,10 @@ class AudioEngine {
     };
 
     void set_volume(float volume) {
-        volume_.store(volume, std::memory_order_relaxed);
+        master_volume_.store(volume, std::memory_order_relaxed);
     };
     float get_volume() const {
-        return volume_.load(std::memory_order_relaxed);
+        return master_volume_.load(std::memory_order_relaxed);
     };
 
     void toggle_play_through();
@@ -90,7 +90,7 @@ class AudioEngine {
     Metronome metronome_;
 
     std::atomic<float> frequency_{440.0f};
-    std::atomic<float> volume_{0.2f};
+    std::atomic<float> master_volume_{0.2f};
     float phase_{0.0};
 
     size_t frame_index_{0};

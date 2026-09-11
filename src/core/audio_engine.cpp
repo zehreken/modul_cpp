@@ -185,7 +185,7 @@ void AudioEngine::process_audio(
     unsigned int frame_count
 ) {
     float freq = frequency_.load(std::memory_order_relaxed);
-    float vol = volume_.load(std::memory_order_relaxed);
+    float vol = master_volume_.load(std::memory_order_relaxed);
     float phase_incr = (TWO_PI * freq) / SAMPLE_RATE;
 
     ma_result result;
