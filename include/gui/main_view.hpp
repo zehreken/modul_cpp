@@ -17,4 +17,8 @@ class MainView {
     ScopeView scope_view_;
     MixerView mixer_view_;
     MetronomeView metronome_view_;
+    bool show_devices_{true};
+    bool show_scope_{true};
+    bool show_mixer_{true};
+    bool show_metronome_{true};
 };

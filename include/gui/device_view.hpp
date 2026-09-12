@@ -8,7 +8,7 @@ class DeviceView {
   public:
     explicit DeviceView(AudioEngine& audio_engine);
 
-    void render(AudioEngine& audio_engine);
+    void render(AudioEngine& audio_engine, bool* show);
 
   private:
     AudioDevices audio_devices_;

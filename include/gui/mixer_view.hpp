@@ -4,7 +4,7 @@ class AudioEngine; // Forward declaration
 
 class MixerView {
   public:
-    void render(AudioEngine& audio_engine);
+    void render(AudioEngine& audio_engine, bool* show);
 
   private:
 };

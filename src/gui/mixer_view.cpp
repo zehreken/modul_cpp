@@ -2,8 +2,8 @@
 #include "core/audio_engine.hpp"
 #include "imgui.h"
 
-void MixerView::render(AudioEngine& audio_engine) {
-    ImGui::Begin("Mixer");
+void MixerView::render(AudioEngine& audio_engine, bool* show) {
+    ImGui::Begin("Mixer", show);
 
     ImGui::Text("Selected tape: %d", audio_engine.get_selected_tape() + 1);
 

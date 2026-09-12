@@ -16,6 +16,21 @@ void MainView::render(AudioEngine& audio_engine) {
             }
             ImGui::EndMenu();
         }
+        if (ImGui::BeginMenu("Windows")) {
+            if (ImGui::MenuItem("Device")) {
+                show_devices_ = !show_devices_;
+            }
+            if (ImGui::MenuItem("Scope")) {
+                show_scope_ = !show_scope_;
+            }
+            if (ImGui::MenuItem("Mixer")) {
+                show_mixer_ = !show_mixer_;
+            }
+            if (ImGui::MenuItem("Metronome")) {
+                show_metronome_ = !show_metronome_;
+            }
+            ImGui::EndMenu();
+        }
         if (audio_engine.can_record()) {
             ImGui::Text("Recording!");
         }
@@ -43,8 +58,12 @@ void MainView::render(AudioEngine& audio_engine) {
         ImGui::EndPopup();
     }
 
-    device_view_.render(audio_engine);
-    scope_view_.render(audio_engine);
-    mixer_view_.render(audio_engine);
-    metronome_view_.render(audio_engine);
+    if (show_devices_)
+        device_view_.render(audio_engine, &show_devices_);
+    if (show_scope_)
+        scope_view_.render(audio_engine, &show_scope_);
+    if (show_mixer_)
+        mixer_view_.render(audio_engine, &show_mixer_);
+    if (show_metronome_)
+        metronome_view_.render(audio_engine, &show_metronome_);
 }

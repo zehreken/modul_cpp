@@ -4,5 +4,5 @@ class AudioEngine; // Forward declaration
 
 class ScopeView {
   public:
-    void render(AudioEngine& audio_engine);
+    void render(AudioEngine& audio_engine, bool* show);
 };

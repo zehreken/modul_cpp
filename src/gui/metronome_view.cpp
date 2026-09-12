@@ -2,8 +2,8 @@
 #include "core/audio_engine.hpp"
 #include "imgui.h"
 
-void MetronomeView::render(AudioEngine& audio_engine) {
-    ImGui::Begin("Metronome");
+void MetronomeView::render(AudioEngine& audio_engine, bool* show) {
+    ImGui::Begin("Metronome", show);
 
     if (ImGui::Checkbox("Run", &can_metronome_run_)) {
         audio_engine.toggle_metronome();

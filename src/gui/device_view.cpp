@@ -5,41 +5,49 @@
 DeviceView::DeviceView(AudioEngine& audio_engine)
     : audio_devices_(audio_engine.get_audio_devices()) {}
 
-void DeviceView::render(AudioEngine& audio_engine) {
-    ImGui::Begin("Device Settings");
+void DeviceView::render(AudioEngine& audio_engine, bool* show) {
+    ImGui::Begin("Device Settings", show);
 
     {
         ImGui::Text("Playback Device");
-        ImGui::Text(
-            audio_devices_.playback_devices_[selected_playback_device_id_]
-                .name_.c_str());
+        ImGui::Text(audio_devices_
+                        .playback_devices_[selected_playback_device_id_]
+                        .name_.c_str());
         ImGui::Text(
             "Channels: %d",
             audio_devices_.playback_devices_[selected_playback_device_id_]
-                .channels_);
+                .channels_
+        );
         ImGui::Text(
             "Format: %d",
             audio_devices_.playback_devices_[selected_playback_device_id_]
-                .format_);
+                .format_
+        );
         ImGui::Text(
             "Sample Rate: %d",
             audio_devices_.playback_devices_[selected_playback_device_id_]
-                .sample_rate_);
+                .sample_rate_
+        );
     }
 
     {
         ImGui::Text("Capture Device");
         ImGui::Text(audio_devices_.capture_devices_[selected_capture_device_id_]
                         .name_.c_str());
-        ImGui::Text("Channels: %d",
-                    audio_devices_.capture_devices_[selected_capture_device_id_]
-                        .channels_);
-        ImGui::Text("Format: %d",
-                    audio_devices_.capture_devices_[selected_capture_device_id_]
-                        .format_);
-        ImGui::Text("Sample Rate: %d",
-                    audio_devices_.capture_devices_[selected_capture_device_id_]
-                        .sample_rate_);
+        ImGui::Text(
+            "Channels: %d",
+            audio_devices_.capture_devices_[selected_capture_device_id_]
+                .channels_
+        );
+        ImGui::Text(
+            "Format: %d",
+            audio_devices_.capture_devices_[selected_capture_device_id_].format_
+        );
+        ImGui::Text(
+            "Sample Rate: %d",
+            audio_devices_.capture_devices_[selected_capture_device_id_]
+                .sample_rate_
+        );
     }
 
     if (ImGui::Button("Refresh Devices")) {
@@ -57,10 +65,13 @@ void DeviceView::render(AudioEngine& audio_engine) {
                     (selected_playback_device_id_ == static_cast<int>(i));
                 if (ImGui::Selectable(
                         audio_devices_.playback_devices_[i].name_.c_str(),
-                        is_selected)) {
+                        is_selected
+                    )) {
                     selected_playback_device_id_ = static_cast<int>(i);
-                    audio_engine.select_devices(selected_playback_device_id_,
-                                                selected_capture_device_id_);
+                    audio_engine.select_devices(
+                        selected_playback_device_id_,
+                        selected_capture_device_id_
+                    );
                 }
             }
             ImGui::EndCombo();
@@ -79,10 +90,13 @@ void DeviceView::render(AudioEngine& audio_engine) {
                     (selected_capture_device_id_ == static_cast<int>(i));
                 if (ImGui::Selectable(
                         audio_devices_.capture_devices_[i].name_.c_str(),
-                        is_selected)) {
+                        is_selected
+                    )) {
                     selected_capture_device_id_ = static_cast<int>(i);
-                    audio_engine.select_devices(selected_playback_device_id_,
-                                                selected_capture_device_id_);
+                    audio_engine.select_devices(
+                        selected_playback_device_id_,
+                        selected_capture_device_id_
+                    );
                 }
             }
             ImGui::EndCombo();

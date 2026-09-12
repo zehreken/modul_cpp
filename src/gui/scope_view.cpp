@@ -2,8 +2,8 @@
 #include "core/audio_engine.hpp"
 #include "imgui.h"
 
-void ScopeView::render(AudioEngine& audio_engine) {
-    ImGui::Begin("Oscillator Controls");
+void ScopeView::render(AudioEngine& audio_engine, bool* show) {
+    ImGui::Begin("Oscillator Controls", show);
 
     ImGui::Separator();
 
