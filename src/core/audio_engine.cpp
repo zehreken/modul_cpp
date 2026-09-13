@@ -22,7 +22,7 @@ AudioEngine::AudioEngine(size_t length)
     if (ma_pcm_rb_init(
             ma_format_f32,
             2,
-            AudioEngine::SCOPE_SIZE,
+            AudioEngine::BUFFER_SIZE,
             nullptr,
             nullptr,
             &impl_->rb_
@@ -132,7 +132,8 @@ bool AudioEngine::select_devices(
     config.capture.format = ma_format_f32;
     config.capture.channels = 2;
     config.sampleRate = static_cast<ma_uint32>(SAMPLE_RATE);
-    config.periodSizeInFrames = SCOPE_SIZE; // periodSizeInFrames <> latency
+    config.periodSizeInFrames =
+        AudioEngine::BUFFER_SIZE; // periodSizeInFrames <-> latency
     config.dataCallback = AudioEngine::c_audio_callback;
     config.pUserData = this;
 
@@ -298,7 +299,8 @@ void AudioEngine::copy_scope_buffer(float* out_target, size_t count) {
     if (result != MA_SUCCESS) {
         return;
     }
-    std::memcpy(out_target, read_buffer, frame_count * sizeof(float));
+    // memcpy copies in bytes a frame is 4 bytes * 2(channel)
+    std::memcpy(out_target, read_buffer, frame_count * sizeof(float) * 2);
     result = ma_pcm_rb_commit_read(&impl_->rb_, frame_count);
     if (result != MA_SUCCESS) {
         return;

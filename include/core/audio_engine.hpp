@@ -65,7 +65,7 @@ class AudioEngine {
     void set_selected_tape(size_t id);
     size_t get_selected_tape();
 
-    static constexpr size_t SCOPE_SIZE = 512;
+    static constexpr size_t BUFFER_SIZE = 128; // In frames
 
   private:
     static constexpr float SAMPLE_RATE = 48000.0f;
@@ -95,7 +95,7 @@ class AudioEngine {
 
     size_t frame_index_{0};
 
-    float scope_buffer_[SCOPE_SIZE]{0.0f};
+    float scope_buffer_[BUFFER_SIZE]{0.0f};
     size_t scope_write_index_{0};
 
     Tape recording_tape_;
