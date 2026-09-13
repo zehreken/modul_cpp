@@ -20,6 +20,19 @@ CPMAddPackage(
     GIT_TAG v1.92.2
 )
 
+# glm — vector/matrix math, GLSL-shaped API. Exports a glm::glm target of its
+# own, so unlike the others it needs no wrapping below.
+#
+# GLM_BUILD_LIBRARY OFF: glm defaults to also compiling a static lib, which is
+# only of use if you opt into its extern-template build. We use it header-only,
+# and with this off glm::glm is a pure INTERFACE target — nothing to compile.
+CPMAddPackage(
+    NAME glm
+    GITHUB_REPOSITORY g-truc/glm
+    GIT_TAG 1.0.3
+    OPTIONS "GLM_BUILD_LIBRARY OFF"
+)
+
 # 3. Build Dear ImGui (+ GLFW/OpenGL3 backends) as its own static library.
 #    Compiles once, stays out of our own warning flags, and keeps the app
 #    target's source list down to just our code.
@@ -78,6 +91,7 @@ add_executable(modul_app
     src/gui/metronome_view.cpp
     src/renderer/scene.cpp
     src/core/metronome.cpp
+    src/gui/render_view.cpp
 )
 
 # 6. Set include paths (imgui's come through the linked target)
@@ -100,9 +114,9 @@ endif()
 
 # 9. Link libraries cross-platform (glfw arrives transitively via imgui)
 if(APPLE)
-    target_link_libraries(modul_app PRIVATE imgui glad dj_fft "-framework OpenGL" "-framework Cocoa" "-framework IOKit" "-framework CoreVideo")
+    target_link_libraries(modul_app PRIVATE imgui glad dj_fft glm::glm "-framework OpenGL" "-framework Cocoa" "-framework IOKit" "-framework CoreVideo")
 elseif(WIN32)
-    target_link_libraries(modul_app PRIVATE imgui glad dj_fft opengl32)
+    target_link_libraries(modul_app PRIVATE imgui glad dj_fft glm::glm opengl32)
 else()
-    target_link_libraries(modul_app PRIVATE imgui glad dj_fft GL pthread dl)
+    target_link_libraries(modul_app PRIVATE imgui glad dj_fft glm::glm GL pthread dl)
 endif()

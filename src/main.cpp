@@ -77,7 +77,7 @@ int main() {
         // FIX: Calculate delta time, unused atm
         double delta_time = glfwGetTime() - elapsed_time;
         elapsed_time = glfwGetTime();
-        main_view.render(audio_engine);
+        main_view.render(audio_engine, scene);
 
         ImGui::Render();
         int display_w, display_h;

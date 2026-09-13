@@ -1,20 +1,25 @@
 #include "renderer/scene.hpp"
+#include <GLFW/glfw3.h>
 #include <glad/glad.h>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 #include <iostream>
 
 const char* vertex_shader_source =
     "#version 330 core\n"
     "layout (location = 0) in vec3 aPos;\n"
+    "uniform mat4 transform;\n"
     "void main()\n"
     "{\n"
-    "   gl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0);\n"
+    "   gl_Position = transform * vec4(aPos, 1.0);\n"
     "}\0";
 const char* fragment_shader_source =
     "#version 330 core\n"
     "out vec4 FragColor;\n"
     "void main()\n"
     "{\n"
-    "   FragColor = vec4(0.0f, 0.5f, 1.0f, 1.0f);\n"
+    "   FragColor = vec4(0.0f, 0.5f, 1.0f, 0.5f);\n"
     "}\n\0";
 
 Scene::Scene() {
@@ -60,6 +65,10 @@ Scene::Scene() {
     }
     glDeleteShader(vertex_shader);
     glDeleteShader(fragment_shader);
+
+    // Uniform locations are fixed for the life of the linked program, so look
+    // this up once here rather than every frame in render().
+    transform_loc_ = glGetUniformLocation(shader_program_, "transform");
 
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
@@ -131,10 +140,21 @@ Scene::~Scene() {
 
 void Scene::render() {
     glUseProgram(shader_program_);
-    glBindVertexArray(
-        vao_
-    ); // seeing as we only have a single VAO there's no need to bind it every
-       // time, but we'll do so to keep things a bit more organized
-    // glDrawArrays(GL_TRIANGLES, 0, 6);
+    glBindVertexArray(vao_);
+
+    glm::mat4 trans(1.0f);
+
+    glm::vec3 position{position_[0], position_[1], position_[2]};
+    trans = glm::translate(trans, position);
+
+    trans = glm::rotate(trans, rotation_[0], glm::vec3(1.0f, 0.0f, 0.0f));
+    trans = glm::rotate(trans, rotation_[1], glm::vec3(0.0f, 1.0f, 0.0f));
+    trans = glm::rotate(trans, rotation_[2], glm::vec3(0.0f, 0.0f, 1.0f));
+
+    glm::vec3 scale{scale_[0], scale_[1], scale_[2]};
+    trans = glm::scale(trans, scale);
+
+    glUniformMatrix4fv(transform_loc_, 1, GL_FALSE, glm::value_ptr(trans));
+
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 }

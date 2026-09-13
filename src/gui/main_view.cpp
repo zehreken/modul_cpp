@@ -3,7 +3,7 @@
 
 MainView::MainView(AudioEngine& audio_engine) : device_view_(audio_engine) {}
 
-void MainView::render(AudioEngine& audio_engine) {
+void MainView::render(AudioEngine& audio_engine, Scene& scene) {
     bool show_new_project_modal = false;
     if (ImGui::BeginMainMenuBar()) {
         if (ImGui::BeginMenu("File")) {
@@ -28,6 +28,9 @@ void MainView::render(AudioEngine& audio_engine) {
             }
             if (ImGui::MenuItem("Metronome")) {
                 show_metronome_ = !show_metronome_;
+            }
+            if (ImGui::MenuItem("Renderers")) {
+                show_render_view_ = !show_render_view_;
             }
             ImGui::EndMenu();
         }
@@ -66,4 +69,6 @@ void MainView::render(AudioEngine& audio_engine) {
         mixer_view_.render(audio_engine, &show_mixer_);
     if (show_metronome_)
         metronome_view_.render(audio_engine, &show_metronome_);
+    if (show_render_view_)
+        render_view_.render(scene, &show_render_view_);
 }
