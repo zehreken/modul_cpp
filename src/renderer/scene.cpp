@@ -5,29 +5,16 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
-
-const char* vertex_shader_source =
-    "#version 330 core\n"
-    "layout (location = 0) in vec3 aPos;\n"
-    "uniform mat4 transform;\n"
-    "void main()\n"
-    "{\n"
-    "   gl_Position = transform * vec4(aPos, 1.0);\n"
-    "}\0";
-const char* fragment_shader_source =
-    "#version 330 core\n"
-    "out vec4 FragColor;\n"
-    "void main()\n"
-    "{\n"
-    "   FragColor = vec4(0.0f, 0.5f, 1.0f, 0.5f);\n"
-    "}\n\0";
+#include <shaders/basic_frag.hpp>
+#include <shaders/basic_vert.hpp>
 
 Scene::Scene() {
     // build and compile our shader program
     // ------------------------------------
     // vertex shader
     unsigned int vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-    glShaderSource(vertex_shader, 1, &vertex_shader_source, nullptr);
+    const char* vertex_src = shaders::basic_vert;
+    glShaderSource(vertex_shader, 1, &vertex_src, nullptr);
     glCompileShader(vertex_shader);
     // check for shader compile errors
     int success;
@@ -41,7 +28,8 @@ Scene::Scene() {
 
     // fragment shader
     unsigned int fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
-    glShaderSource(fragment_shader, 1, &fragment_shader_source, NULL);
+    const char* frag_src = shaders::basic_frag;
+    glShaderSource(fragment_shader, 1, &frag_src, NULL);
     glCompileShader(fragment_shader);
     // check for shader compile errors
     glGetShaderiv(fragment_shader, GL_COMPILE_STATUS, &success);
@@ -142,19 +130,31 @@ void Scene::render() {
     glUseProgram(shader_program_);
     glBindVertexArray(vao_);
 
-    glm::mat4 trans(1.0f);
+    glm::mat4 model = glm::mat4(1.0f);
+    glm::mat4 view = glm::mat4(1.0f);
+    glm::mat4 projection = glm::mat4(1.0f);
 
-    glm::vec3 position{position_[0], position_[1], position_[2]};
-    trans = glm::translate(trans, position);
-
-    trans = glm::rotate(trans, rotation_[0], glm::vec3(1.0f, 0.0f, 0.0f));
-    trans = glm::rotate(trans, rotation_[1], glm::vec3(0.0f, 1.0f, 0.0f));
-    trans = glm::rotate(trans, rotation_[2], glm::vec3(0.0f, 0.0f, 1.0f));
+    model = glm::rotate(model, rotation_[0], glm::vec3(1.0f, 0.0f, 0.0f));
+    model = glm::rotate(model, rotation_[1], glm::vec3(0.0f, 1.0f, 0.0f));
+    model = glm::rotate(model, rotation_[2], glm::vec3(0.0f, 0.0f, 1.0f));
 
     glm::vec3 scale{scale_[0], scale_[1], scale_[2]};
-    trans = glm::scale(trans, scale);
+    model = glm::scale(model, scale);
 
-    glUniformMatrix4fv(transform_loc_, 1, GL_FALSE, glm::value_ptr(trans));
+    glm::vec3 position{position_[0], position_[1], position_[2]};
+    view = glm::translate(view, position);
+
+    projection =
+        glm::perspective(glm::radians(45.0f), 1600.0f / 1200.0f, 0.1f, 100.0f);
+
+    unsigned int model_loc = glGetUniformLocation(shader_program_, "model");
+    unsigned int view_loc = glGetUniformLocation(shader_program_, "view");
+    unsigned int projection_loc =
+        glGetUniformLocation(shader_program_, "projection");
+
+    glUniformMatrix4fv(model_loc, 1, GL_FALSE, glm::value_ptr(model));
+    glUniformMatrix4fv(view_loc, 1, GL_FALSE, &view[0][0]);
+    glUniformMatrix4fv(projection_loc, 1, GL_FALSE, &projection[0][0]);
 
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 }

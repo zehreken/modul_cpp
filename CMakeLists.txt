@@ -79,7 +79,38 @@ add_library(dj_fft INTERFACE)
 # The header is included as <dj_fft/dj_fft.h>, so external/ is the search root.
 target_include_directories(dj_fft INTERFACE external)
 
-# 5. Define the executable target — just our own sources now.
+# 5. Embed GLSL sources into generated headers.
+#
+# C++20 has no equivalent of Rust's include_str! — that arrives as #embed in
+# C++26/C23, which MSVC doesn't ship yet — so the build does it by hand: each
+# shader file is read and written back out as a header holding one raw string
+# literal, e.g. shaders::basic_vert.
+#
+# This runs at configure time, and CMAKE_CONFIGURE_DEPENDS registers the shader
+# as an input to the build system itself, so touching a .vert/.frag makes CMake
+# re-run (regenerating the header) before the next build. Costs a reconfigure
+# per shader edit; buys not needing a custom command and a generator script.
+function(embed_text SRC VAR)
+    file(READ "${CMAKE_CURRENT_SOURCE_DIR}/${SRC}" CONTENT)
+    # Note there's no newline between R"GLSL( and the content: GLSL requires
+    # #version to be the first thing in the shader. The )GLSL" delimiter can't
+    # collide with anything — GLSL has no string literals, so the source can
+    # never contain a double quote.
+    file(WRITE "${CMAKE_CURRENT_BINARY_DIR}/generated/shaders/${VAR}.hpp"
+"#pragma once
+// Generated from ${SRC} - do not edit.
+namespace shaders {
+inline constexpr char ${VAR}[] = R\"GLSL(${CONTENT})GLSL\";
+}
+")
+    set_property(DIRECTORY APPEND PROPERTY CMAKE_CONFIGURE_DEPENDS
+                 "${CMAKE_CURRENT_SOURCE_DIR}/${SRC}")
+endfunction()
+
+embed_text(shaders/basic.vert basic_vert)
+embed_text(shaders/basic.frag basic_frag)
+
+# 6. Define the executable target — just our own sources now.
 add_executable(modul_app
     src/main.cpp
     src/core/audio_engine.cpp
@@ -94,15 +125,17 @@ add_executable(modul_app
     src/gui/render_view.cpp
 )
 
-# 6. Set include paths (imgui's come through the linked target)
+# 7. Set include paths (imgui's come through the linked target)
 target_include_directories(modul_app PRIVATE
     include
+    # Where embed_text writes its headers, included as <shaders/basic_vert.hpp>.
+    ${CMAKE_CURRENT_BINARY_DIR}/generated
 )
 
-# 7. Keep GLFW out of the GL header business — glad declares the GL API instead.
+# 8. Keep GLFW out of the GL header business — glad declares the GL API instead.
 target_compile_definitions(modul_app PRIVATE GLFW_INCLUDE_NONE)
 
-# 8. Windows: stop windows.h from defining min/max macros (breaks std::min)
+# 9. Windows: stop windows.h from defining min/max macros (breaks std::min)
 if(WIN32)
     target_compile_definitions(modul_app PRIVATE NOMINMAX WIN32_LEAN_AND_MEAN)
     # The MSVC STL hard-errors (STL1000) when parsed by Clang older than 19.
@@ -112,7 +145,7 @@ if(WIN32)
     target_compile_definitions(modul_app PRIVATE _ALLOW_COMPILER_AND_STL_VERSION_MISMATCH)
 endif()
 
-# 9. Link libraries cross-platform (glfw arrives transitively via imgui)
+# 10. Link libraries cross-platform (glfw arrives transitively via imgui)
 if(APPLE)
     target_link_libraries(modul_app PRIVATE imgui glad dj_fft glm::glm "-framework OpenGL" "-framework Cocoa" "-framework IOKit" "-framework CoreVideo")
 elseif(WIN32)
