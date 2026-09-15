@@ -26,7 +26,7 @@ int main() {
 #endif
 
     GLFWwindow* window =
-        glfwCreateWindow(1024, 600, "modul ❤", nullptr, nullptr);
+        glfwCreateWindow(2000, 1200, "modul ❤", nullptr, nullptr);
     if (!window) {
         std::cerr << "Failed to create GLFW window\n";
         glfwTerminate();
