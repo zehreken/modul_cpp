@@ -10,7 +10,7 @@ void RenderView::render(Scene& scene, bool* show) {
     if (ImGui::Button("Reset Position")) {
         scene.position_[0] = scene.position_[1] = scene.position_[2] = 0.0f;
     }
-    ImGui::SliderFloat3("Position", scene.position_, -5.0f, 0.0f, "%.2f");
+    ImGui::SliderFloat3("Position", scene.position_, -5.0f, 5.0f, "%.2f");
     if (ImGui::Button("Reset Rotation")) {
         scene.rotation_[0] = scene.rotation_[1] = scene.rotation_[2] = 0.0f;
     }

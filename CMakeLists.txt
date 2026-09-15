@@ -109,6 +109,7 @@ endfunction()
 
 embed_text(shaders/basic.vert basic_vert)
 embed_text(shaders/basic.frag basic_frag)
+embed_text(shaders/circle.frag circle_frag)
 
 # 6. Define the executable target — just our own sources now.
 add_executable(modul_app
@@ -121,6 +122,7 @@ add_executable(modul_app
     src/gui/mixer_view.cpp
     src/gui/metronome_view.cpp
     src/renderer/scene.cpp
+    src/renderer/shader.cpp
     src/core/metronome.cpp
     src/gui/render_view.cpp
 )

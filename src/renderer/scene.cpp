@@ -1,56 +1,27 @@
 #include "renderer/scene.hpp"
+#include "renderer/shader.hpp"
 #include <GLFW/glfw3.h>
 #include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <iostream>
 #include <shaders/basic_frag.hpp>
 #include <shaders/basic_vert.hpp>
+#include <shaders/circle_frag.hpp>
 
 Scene::Scene() {
     // build and compile our shader program
     // ------------------------------------
-    // vertex shader
-    unsigned int vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-    const char* vertex_src = shaders::basic_vert;
-    glShaderSource(vertex_shader, 1, &vertex_src, nullptr);
-    glCompileShader(vertex_shader);
-    // check for shader compile errors
-    int success;
-    char info_log[512];
-    glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &success);
-    if (!success) {
-        glGetShaderInfoLog(vertex_shader, 512, nullptr, info_log);
-        std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n"
-                  << info_log << std::endl;
-    }
+    // These throw on failure (see renderer/shader.hpp), so a broken shader
+    // stops the app with the driver's message instead of leaving us with a
+    // program that silently draws nothing.
+    unsigned int vertex_shader =
+        compile_shader(GL_VERTEX_SHADER, shaders::basic_vert, "basic.vert");
+    unsigned int fragment_shader =
+        compile_shader(GL_FRAGMENT_SHADER, shaders::circle_frag, "circle.frag");
 
-    // fragment shader
-    unsigned int fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
-    const char* frag_src = shaders::basic_frag;
-    glShaderSource(fragment_shader, 1, &frag_src, NULL);
-    glCompileShader(fragment_shader);
-    // check for shader compile errors
-    glGetShaderiv(fragment_shader, GL_COMPILE_STATUS, &success);
-    if (!success) {
-        glGetShaderInfoLog(fragment_shader, 512, NULL, info_log);
-        std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n"
-                  << info_log << std::endl;
-    }
+    shader_program_ = link_program(vertex_shader, fragment_shader);
 
-    // link shaders
-    shader_program_ = glCreateProgram();
-    glAttachShader(shader_program_, vertex_shader);
-    glAttachShader(shader_program_, fragment_shader);
-    glLinkProgram(shader_program_);
-    // check for linking errors
-    glGetProgramiv(shader_program_, GL_LINK_STATUS, &success);
-    if (!success) {
-        glGetProgramInfoLog(shader_program_, 512, NULL, info_log);
-        std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n"
-                  << info_log << std::endl;
-    }
     glDeleteShader(vertex_shader);
     glDeleteShader(fragment_shader);
 
@@ -61,27 +32,23 @@ Scene::Scene() {
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
     float vertices[] = {
-        0.5f,
-        0.5f,
-        0.0f, // top right
-        0.5f,
-        -0.5f,
-        0.0f, // bottom right
-        -0.5f,
-        -0.5f,
-        0.0f, // bottom left
-        -0.5f,
-        0.5f,
-        0.0f // top left
+        0.5f,  0.5f,  0.0f, // top right
+        1.0f,  1.0f,        // uv
+        0.5f,  -0.5f, 0.0f, // bottom right
+        1.0f,  0.0f,        // uv
+        -0.5f, -0.5f, 0.0f, // bottom left
+        0.0f,  0.0f,        // uv
+        -0.5f, 0.5f,  0.0f, // top left
+        0.0f,  1.0f         // uv
     };
     unsigned int indices[] = {
         // note that we start from 0!
         0,
+        3,
+        1, // first Triangle
         1,
-        3, // first Triangle
-        1,
-        2,
-        3 // second Triangle
+        3,
+        2 // second Triangle
     };
     glGenVertexArrays(1, &vao_);
     glGenBuffers(1, &vbo_);
@@ -99,9 +66,14 @@ Scene::Scene() {
     );
 
     glVertexAttribPointer(
-        0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0
+        0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0
     );
     glEnableVertexAttribArray(0);
+    // uv
+    glVertexAttribPointer(
+        1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float))
+    );
+    glEnableVertexAttribArray(1);
 
     // note that this is allowed, the call to glVertexAttribPointer registered
     // VBO as the vertex attribute's bound vertex buffer object so afterwards we
@@ -126,7 +98,7 @@ Scene::~Scene() {
     glDeleteProgram(shader_program_);
 }
 
-void Scene::render() {
+void Scene::render(float peak) {
     glUseProgram(shader_program_);
     glBindVertexArray(vao_);
 
@@ -151,10 +123,12 @@ void Scene::render() {
     unsigned int view_loc = glGetUniformLocation(shader_program_, "view");
     unsigned int projection_loc =
         glGetUniformLocation(shader_program_, "projection");
+    unsigned int time_loc = glGetUniformLocation(shader_program_, "time");
 
     glUniformMatrix4fv(model_loc, 1, GL_FALSE, glm::value_ptr(model));
     glUniformMatrix4fv(view_loc, 1, GL_FALSE, &view[0][0]);
     glUniformMatrix4fv(projection_loc, 1, GL_FALSE, &projection[0][0]);
+    glUniform1f(time_loc, peak);
 
     glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 }

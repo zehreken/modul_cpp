@@ -46,6 +46,22 @@ bool AudioEngine::init() {
     return select_devices(-1, -1); // init with default device
 }
 
+void AudioEngine::update() {
+    void* read_buffer;
+    ma_result result;
+    ma_uint32 frame_count = static_cast<ma_uint32>(BUFFER_SIZE);
+    result = ma_pcm_rb_acquire_read(&impl_->rb_, &frame_count, &read_buffer);
+    if (result != MA_SUCCESS) {
+        return;
+    }
+    // memcpy copies in bytes a frame is 4 bytes * 2(channel)
+    std::memcpy(scope_buffer_, read_buffer, frame_count * sizeof(float) * 2);
+    result = ma_pcm_rb_commit_read(&impl_->rb_, frame_count);
+    if (result != MA_SUCCESS) {
+        return;
+    }
+}
+
 void AudioEngine::shutdown() {
     ma_pcm_rb_uninit(&impl_->rb_);
     if (impl_->is_device_initialized_) {
@@ -289,27 +305,6 @@ void AudioEngine::toggle_metronome() {
     can_metronome_run_ = !can_metronome_run_;
 }
 
-void AudioEngine::copy_scope_buffer(float* out_target, size_t count) {
-    // TODO: This is currently broken, need to separate
-    // L and R channel and also memcpy arithmetic is wrong
-    void* read_buffer;
-    ma_result result;
-    ma_uint32 frame_count = static_cast<ma_uint32>(count);
-    result = ma_pcm_rb_acquire_read(&impl_->rb_, &frame_count, &read_buffer);
-    if (result != MA_SUCCESS) {
-        return;
-    }
-    // memcpy copies in bytes a frame is 4 bytes * 2(channel)
-    std::memcpy(out_target, read_buffer, frame_count * sizeof(float) * 2);
-    result = ma_pcm_rb_commit_read(&impl_->rb_, frame_count);
-    if (result != MA_SUCCESS) {
-        return;
-    }
-    // std::cout << "read r2: " << r2 << std::endl;
-    // size_t copy_size = std::min(count, SCOPE_SIZE);
-    // std::memcpy(out_target, scope_buffer_, copy_size * sizeof(float));
-}
-
 void AudioEngine::copy_recording(float* out_target, size_t count) {
     for (size_t i = 0; i < count; ++i) {
         *out_target++ = recording_tape_.read(i);
@@ -325,3 +320,5 @@ void AudioEngine::set_selected_tape(size_t id) {
 size_t AudioEngine::get_selected_tape() {
     return selected_tape_.load(std::memory_order_relaxed);
 }
+
+float* AudioEngine::get_scope_buffer() { return scope_buffer_; }

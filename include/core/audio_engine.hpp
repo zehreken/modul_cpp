@@ -31,6 +31,7 @@ class AudioEngine {
     AudioEngine& operator=(const AudioEngine&) = delete;
 
     bool init();
+    void update();
     void shutdown();
 
     AudioDevices get_audio_devices();
@@ -58,12 +59,13 @@ class AudioEngine {
 
     void toggle_metronome();
 
-    void copy_scope_buffer(float* out_target, size_t count);
     void copy_recording(float* out_target, size_t count);
     Tape& get_tape(size_t id);
 
     void set_selected_tape(size_t id);
     size_t get_selected_tape();
+
+    float* get_scope_buffer();
 
     static constexpr size_t BUFFER_SIZE = 128; // In frames
 
@@ -95,7 +97,7 @@ class AudioEngine {
 
     size_t frame_index_{0};
 
-    float scope_buffer_[BUFFER_SIZE]{0.0f};
+    float scope_buffer_[BUFFER_SIZE * 2]{0.0f};
     size_t scope_write_index_{0};
 
     Tape recording_tape_;

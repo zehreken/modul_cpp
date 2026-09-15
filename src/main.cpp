@@ -8,6 +8,9 @@
 #include "core/audio_engine.hpp"
 #include "gui/main_view.hpp"
 #include "renderer/scene.hpp"
+#include "renderer/shader.hpp"
+#include <exception>
+#include <memory>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void key_callback(
@@ -65,7 +68,16 @@ int main() {
     double elapsed_time = glfwGetTime();
 
     MainView main_view(audio_engine);
-    Scene scene;
+
+    std::unique_ptr<Scene> scene;
+    try {
+        scene = std::make_unique<Scene>();
+    } catch (const std::exception& e) {
+        report_fatal(e.what());
+        glfwDestroyWindow(window);
+        glfwTerminate();
+        return -1;
+    }
 
     while (!glfwWindowShouldClose(window)) {
         glfwPollEvents();
@@ -77,7 +89,7 @@ int main() {
         // FIX: Calculate delta time, unused atm
         double delta_time = glfwGetTime() - elapsed_time;
         elapsed_time = glfwGetTime();
-        main_view.render(audio_engine, scene);
+        main_view.render(audio_engine, *scene);
 
         ImGui::Render();
         int display_w, display_h;
@@ -86,7 +98,15 @@ int main() {
         glClearColor(1.0f, 0.0f, 0.33f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        scene.render();
+        audio_engine.update();
+
+        float* frame_buffer = audio_engine.get_scope_buffer();
+        float sum = 0.0f;
+        for (int i = 0; i < AudioEngine::BUFFER_SIZE * 2; ++i) {
+            sum += std::abs(frame_buffer[i]);
+        }
+        float average = sum / (AudioEngine::BUFFER_SIZE * 2);
+        scene->render(average);
 
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         glfwSwapBuffers(window);

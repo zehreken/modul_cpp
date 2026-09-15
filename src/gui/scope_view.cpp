@@ -8,8 +8,7 @@ void ScopeView::render(AudioEngine& audio_engine, bool* show) {
     ImGui::Begin("Oscillator Controls", show);
 
     ImGui::Text("Oscilloscope Output:");
-    float frame_buffer[AudioEngine::BUFFER_SIZE * 2]{0.0f};
-    audio_engine.copy_scope_buffer(frame_buffer, AudioEngine::BUFFER_SIZE);
+    float* frame_buffer = audio_engine.get_scope_buffer();
     float left[AudioEngine::BUFFER_SIZE]{0.0f};
     float right[AudioEngine::BUFFER_SIZE]{0.0};
     for (int i = 0; i < AudioEngine::BUFFER_SIZE; ++i) {
