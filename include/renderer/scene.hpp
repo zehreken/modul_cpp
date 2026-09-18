@@ -12,7 +12,7 @@ class Scene {
     Scene();
     ~Scene();
     void render(float peak);
-    float position_[3]{0.0f, 0.0f, 0.0f};
+    float position_[3]{0.0f, 0.0f, -5.0f};
     float rotation_[3]{0.0f, 0.0f, 0.0f};
     float scale_[3]{1.0f, 1.0f, 1.0f};
 
