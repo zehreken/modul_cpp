@@ -117,7 +117,7 @@ add_executable(modul_app
     src/core/audio_engine.cpp
     src/core/tape.cpp
     src/gui/main_view.cpp
-    src/gui/device_view.cpp
+    src/gui/stats_view.cpp
     src/gui/scope_view.cpp
     src/gui/mixer_view.cpp
     src/gui/metronome_view.cpp

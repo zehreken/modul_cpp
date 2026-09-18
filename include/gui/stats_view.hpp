@@ -4,9 +4,9 @@
 
 class AudioEngine; // Forward declaration
 
-class DeviceView {
+class StatsView {
   public:
-    explicit DeviceView(AudioEngine& audio_engine);
+    explicit StatsView(AudioEngine& audio_engine);
 
     void render(AudioEngine& audio_engine, bool* show);
 
