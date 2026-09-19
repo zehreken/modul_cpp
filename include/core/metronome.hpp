@@ -2,7 +2,7 @@
 
 class Metronome {
   public:
-    Metronome(unsigned int bpm, float frame_rate);
+    Metronome(int bpm = 120, float frame_rate = 48000);
     void update(size_t frame_index);
     bool can_beep() const;
 

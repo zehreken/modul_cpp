@@ -4,7 +4,7 @@
 
 class Tape {
   public:
-    Tape(size_t length);
+    explicit Tape(size_t length = 0);
     float get_volume();
     void set_volume(float vol);
     float get_pan();

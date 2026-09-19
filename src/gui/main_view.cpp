@@ -53,6 +53,7 @@ void MainView::render(AudioEngine& audio_engine, Scene& scene) {
         ImGui::Separator();
         render_project_popup(audio_engine);
         if (ImGui::Button("OK")) {
+            audio_engine.init(project_config_);
             ImGui::CloseCurrentPopup();
         }
         ImGui::SameLine();
@@ -97,6 +98,7 @@ void MainView::render_project_popup(AudioEngine& audio_engine) {
         );
     }
 
+    ImGui::Separator();
     {
         ImGui::Text("Capture Device");
         ImGui::Text(audio_devices_.capture_devices_[selected_capture_device_id_]
@@ -169,4 +171,8 @@ void MainView::render_project_popup(AudioEngine& audio_engine) {
             ImGui::EndCombo();
         }
     }
+
+    ImGui::Separator();
+    ImGui::InputInt("BPM", &project_config_.bpm_);
+    ImGui::InputInt("Bar Count", &project_config_.bar_count_);
 }

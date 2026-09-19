@@ -64,12 +64,17 @@ void Tape::add(const std::vector<float> other) {
 }
 
 float Tape::read(size_t index) {
+    if (audio_.size() == 0)
+        return 0.0f;
     index = index % audio_.size();
     // std::cout << index << " " << audio_[index] << std::endl;
     return audio_[index];
 }
 
 void Tape::write(float sample) {
+    if (audio_.size() == 0) {
+        return;
+    }
     audio_[record_index_] = sample;
     record_index_++;
     // std::cout << record_index_ << " " << sample << std::endl;

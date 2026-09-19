@@ -52,7 +52,7 @@ void StatsView::render(AudioEngine& audio_engine, bool* show) {
 
     ImGui::Separator();
 
-    ImGui::Text("BPM: %d", 120);
+    ImGui::Text("BPM: %d", audio_engine.get_bpm());
 
     ImGui::End();
 }

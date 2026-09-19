@@ -28,6 +28,7 @@ class MainView {
     bool show_metronome_{true};
     bool show_render_view_{true};
 
+    ProjectConfig project_config_;
     AudioDevices audio_devices_;
     int selected_playback_device_id_{0};
     int selected_capture_device_id_{0};

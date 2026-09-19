@@ -59,8 +59,7 @@ int main() {
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init("#version 150");
 
-    AudioEngine audio_engine{192000};
-    audio_engine.init();
+    AudioEngine audio_engine;
 
     // Keyboard input
     glfwSetKeyCallback(window, key_callback);

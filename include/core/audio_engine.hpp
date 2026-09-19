@@ -8,6 +8,13 @@
 #include "core/metronome.hpp"
 #include "core/tape.hpp"
 
+struct ProjectConfig {
+    int bpm_{120};
+    int bar_count_{4};
+    int selected_playback_device_id_{0};
+    int seelcted_capture_device_id_{0};
+};
+
 struct AudioDeviceInfo {
     std::string name_;
     int channels_;
@@ -24,13 +31,13 @@ struct AudioDevices {
 
 class AudioEngine {
   public:
-    explicit AudioEngine(size_t length);
+    explicit AudioEngine();
     ~AudioEngine();
 
     AudioEngine(const AudioEngine&) = delete;
     AudioEngine& operator=(const AudioEngine&) = delete;
 
-    bool init();
+    bool init(ProjectConfig project_config);
     void update();
     void shutdown();
 
@@ -69,6 +76,8 @@ class AudioEngine {
 
     static constexpr size_t BUFFER_SIZE = 128; // In frames
 
+    int get_bpm() { return bpm_; };
+
   private:
     static constexpr float SAMPLE_RATE = 48000.0f;
     static constexpr float TWO_PI = 6.28318530717958647692f;
@@ -88,6 +97,8 @@ class AudioEngine {
 
     struct Impl;
     Impl* impl_;
+
+    int bpm_{120};
 
     Metronome metronome_;
 

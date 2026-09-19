@@ -16,9 +16,7 @@ struct AudioEngine::Impl {
     ma_pcm_rb rb_;
 };
 
-AudioEngine::AudioEngine(size_t length)
-    : impl_(new Impl()), recording_tape_(length), metronome_{120, 48000},
-      tapes_{length, length, length, length, length, length, length, length} {
+AudioEngine::AudioEngine() : impl_(new Impl()) {
     if (ma_pcm_rb_init(
             ma_format_f32,
             2,
@@ -31,6 +29,10 @@ AudioEngine::AudioEngine(size_t length)
     } else {
         std::cout << "Failed to create ring buffer" << std::endl;
     }
+    if (ma_context_init(nullptr, 0, nullptr, &impl_->context_) == MA_SUCCESS) {
+        impl_->is_context_initialized_ = true;
+        select_devices(-1, -1); // init with default devices
+    }
 }
 
 AudioEngine::~AudioEngine() {
@@ -38,12 +40,23 @@ AudioEngine::~AudioEngine() {
     delete impl_;
 };
 
-bool AudioEngine::init() {
-    if (ma_context_init(nullptr, 0, nullptr, &impl_->context_) != MA_SUCCESS) {
-        return false;
+bool AudioEngine::init(ProjectConfig project_config) {
+    std::cout << project_config.bpm_ << " " << project_config.bar_count_ << " "
+              << std::endl;
+    metronome_ = Metronome{project_config.bpm_, 48000};
+    size_t length = static_cast<size_t>(project_config.bar_count_) *
+                    48000; // sample rate should not be hardcoded
+    recording_tape_ = Tape{length};
+    for (auto& tape : tapes_) {
+        tape = Tape(length);
     }
-    impl_->is_context_initialized_ = true;
-    return select_devices(-1, -1); // init with default device
+    //  what is tape length? tape length = bar_count * sample_rate,
+    //  assuming tapes are mono
+    bpm_ = project_config.bpm_;
+    return select_devices(
+        project_config.selected_playback_device_id_,
+        project_config.selected_playback_device_id_
+    );
 }
 
 void AudioEngine::update() {
