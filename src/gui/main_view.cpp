@@ -19,19 +19,22 @@ void MainView::render(AudioEngine& audio_engine, Scene& scene) {
         }
         if (ImGui::BeginMenu("Windows")) {
             if (ImGui::MenuItem("Device")) {
-                show_devices_ = !show_devices_;
+                show_devices_view_ = !show_devices_view_;
             }
             if (ImGui::MenuItem("Scope")) {
-                show_scope_ = !show_scope_;
+                show_scope_view_ = !show_scope_view_;
             }
             if (ImGui::MenuItem("Mixer")) {
-                show_mixer_ = !show_mixer_;
+                show_mixer_view_ = !show_mixer_view_;
             }
             if (ImGui::MenuItem("Metronome")) {
-                show_metronome_ = !show_metronome_;
+                show_metronome_view_ = !show_metronome_view_;
             }
             if (ImGui::MenuItem("Renderers")) {
                 show_render_view_ = !show_render_view_;
+            }
+            if (ImGui::MenuItem("Tapes")) {
+                show_tape_view_ = !show_tape_view_;
             }
             ImGui::EndMenu();
         }
@@ -63,16 +66,18 @@ void MainView::render(AudioEngine& audio_engine, Scene& scene) {
         ImGui::EndPopup();
     }
 
-    if (show_devices_)
-        stats_view_.render(audio_engine, &show_devices_);
-    if (show_scope_)
-        scope_view_.render(audio_engine, &show_scope_);
-    if (show_mixer_)
-        mixer_view_.render(audio_engine, &show_mixer_);
-    if (show_metronome_)
-        metronome_view_.render(audio_engine, &show_metronome_);
+    if (show_devices_view_)
+        stats_view_.render(audio_engine, &show_devices_view_);
+    if (show_scope_view_)
+        scope_view_.render(audio_engine, &show_scope_view_);
+    if (show_mixer_view_)
+        mixer_view_.render(audio_engine, &show_mixer_view_);
+    if (show_metronome_view_)
+        metronome_view_.render(audio_engine, &show_metronome_view_);
     if (show_render_view_)
         render_view_.render(scene, &show_render_view_);
+    if (show_tape_view_)
+        tape_view_.render(audio_engine, &show_tape_view_);
 }
 
 void MainView::render_project_popup(AudioEngine& audio_engine) {

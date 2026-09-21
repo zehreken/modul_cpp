@@ -1,5 +1,7 @@
 #pragma once
 
+#include "core/audio_engine.hpp"
+
 class AudioEngine; // Forward declaration
 
 class TapeView {
