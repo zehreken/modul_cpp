@@ -43,7 +43,8 @@ AudioEngine::~AudioEngine() {
 bool AudioEngine::init(ProjectConfig project_config) {
     std::cout << project_config.bpm_ << " " << project_config.bar_count_ << " "
               << std::endl;
-    metronome_ = Metronome{project_config.bpm_, 48000};
+    metronome_ = std::make_unique<Metronome>(project_config.bpm_, 48000.0f);
+
     size_t length = static_cast<size_t>(project_config.bar_count_) *
                     48000; // sample rate should not be hardcoded
     recording_tape_ = Tape{length};
@@ -254,7 +255,7 @@ void AudioEngine::process_audio(
 
     for (unsigned int i = 0; i < frame_count; ++i) {
         frame_index_++;
-        metronome_.update(frame_index_);
+        metronome_->update(frame_index_);
         float sample = std::sin(phase_);
 
         float in_left = input ? *input++ : 0.0f;
@@ -262,7 +263,7 @@ void AudioEngine::process_audio(
 
         float out_left = 0.0f;
         float out_right = 0.0f;
-        if (can_metronome_run_ && metronome_.can_beep()) {
+        if (can_metronome_run_ && metronome_->can_beep()) {
             out_left += sample;
             out_right += sample;
         }

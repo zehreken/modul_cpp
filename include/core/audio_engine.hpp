@@ -2,6 +2,7 @@
 
 #include <atomic>
 #include <cstddef>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -100,7 +101,7 @@ class AudioEngine {
 
     int bpm_{120};
 
-    Metronome metronome_;
+    std::unique_ptr<Metronome> metronome_;
 
     std::atomic<float> frequency_{440.0f};
     std::atomic<float> master_volume_{0.2f};

@@ -60,6 +60,7 @@ int main() {
     ImGui_ImplOpenGL3_Init("#version 150");
 
     AudioEngine audio_engine;
+    audio_engine.init(ProjectConfig{});
 
     // Keyboard input
     glfwSetKeyCallback(window, key_callback);
