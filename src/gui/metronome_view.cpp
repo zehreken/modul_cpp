@@ -17,5 +17,17 @@ void MetronomeView::render(AudioEngine& audio_engine, bool* show) {
         audio_engine.set_frequency(freq);
     }
 
+    ImGui::Text("Beat count: %d", audio_engine.get_beat_count());
+    for (int i = 0; i < 4; ++i) {
+        ImGui::PushID(i);
+        ImGui::RadioButton(
+            "##",
+            audio_engine.can_metronome_beep() &&
+                i == audio_engine.get_beat_count() % 4
+        );
+        ImGui::SameLine();
+        ImGui::PopID();
+    }
+
     ImGui::End();
 }
