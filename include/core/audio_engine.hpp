@@ -80,6 +80,9 @@ class AudioEngine {
     static constexpr size_t BUFFER_SIZE = 128; // In frames
 
     int get_bpm() { return bpm_; };
+    int get_frame_index() {
+        return published_frame_index_.load(std::memory_order_relaxed);
+    };
 
   private:
     static constexpr float SAMPLE_RATE = 48000.0f;
@@ -110,6 +113,7 @@ class AudioEngine {
     float phase_{0.0};
 
     size_t frame_index_{0};
+    std::atomic<int> published_frame_index_{0}; // For UI
 
     float scope_buffer_[BUFFER_SIZE * 2]{0.0f};
     size_t scope_write_index_{0};

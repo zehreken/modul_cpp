@@ -32,6 +32,7 @@ AudioEngine::AudioEngine() : impl_(new Impl()) {
     if (ma_context_init(nullptr, 0, nullptr, &impl_->context_) == MA_SUCCESS) {
         impl_->is_context_initialized_ = true;
         select_devices(-1, -1); // init with default devices
+        metronome_ = std::make_unique<Metronome>(120, 48000.0f);
     }
 }
 
@@ -302,6 +303,7 @@ void AudioEngine::process_audio(
         if (phase_ >= TWO_PI)
             phase_ -= TWO_PI;
     }
+    published_frame_index_.store(frame_index_, std::memory_order_relaxed);
 }
 
 void AudioEngine::toggle_play_through() {
