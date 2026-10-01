@@ -5,8 +5,6 @@
 void MixerView::render(AudioEngine& audio_engine, bool* show) {
     ImGui::Begin("Mixer", show);
 
-    ImGui::Text("Selected tape: %d", audio_engine.get_selected_tape() + 1);
-
     constexpr float width = 80.0f;
     for (int i = 0; i < 8; ++i) {
         ImGui::PushID(i);
