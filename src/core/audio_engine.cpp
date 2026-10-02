@@ -52,6 +52,10 @@ bool AudioEngine::init(ProjectConfig project_config) {
     for (auto& tape : tapes_) {
         tape = Tape(length);
     }
+
+    for (auto& view_tape : view_tapes_) {
+        view_tape = std::vector<float>(512, 0.0f);
+    }
     //  what is tape length? tape length = bar_count * sample_rate,
     //  assuming tapes are mono
     bpm_ = project_config.bpm_;
@@ -313,7 +317,12 @@ void AudioEngine::toggle_play_through() {
 bool AudioEngine::can_play_through() { return can_play_through_; }
 
 // When load operation is not used, it is seq_cst load
-void AudioEngine::toggle_record() { can_record_ = !can_record_; }
+void AudioEngine::toggle_record() {
+    can_record_ = !can_record_;
+    if (!can_record_) {
+        view_tapes_[selected_tape_] = tapes_[selected_tape_].get_view_copy();
+    }
+}
 
 bool AudioEngine::can_record() { return can_record_; }
 
@@ -329,8 +338,13 @@ void AudioEngine::copy_recording(float* out_target, size_t count) {
 
 Tape& AudioEngine::get_tape(size_t id) { return tapes_[id]; }
 
+std::vector<float>& AudioEngine::get_view_tape(size_t id) {
+    return view_tapes_[id];
+}
+
 void AudioEngine::set_selected_tape(size_t id) {
-    selected_tape_.store(id, std::memory_order_relaxed);
+    if (!can_record_)
+        selected_tape_.store(id, std::memory_order_relaxed);
 }
 
 size_t AudioEngine::get_selected_tape() {

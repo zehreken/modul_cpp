@@ -14,5 +14,17 @@ void TapeView::render(AudioEngine& audio_engine, bool* show) {
     int frame_index = audio_engine.get_frame_index() % 192000;
     ImGui::SliderInt("Tape", &frame_index, 0, 192000, "%1");
 
+    for (int i = 0; i < 8; ++i) {
+        ImGui::PushID(i);
+        // ImGui::BeginChild("##Tape")
+
+        float* tape_data = audio_engine.get_view_tape(i).data();
+        ImGui::PlotLines(
+            "##Tape", tape_data, 512, 0, nullptr, -1.0f, 1.0f, ImVec2(0, 150)
+        );
+
+        ImGui::PopID();
+    }
+
     ImGui::End();
 }

@@ -71,6 +71,7 @@ class AudioEngine {
 
     void copy_recording(float* out_target, size_t count);
     Tape& get_tape(size_t id);
+    std::vector<float>& get_view_tape(size_t id);
 
     void set_selected_tape(size_t id);
     size_t get_selected_tape();
@@ -120,6 +121,7 @@ class AudioEngine {
 
     Tape recording_tape_;
     Tape tapes_[8];
+    std::vector<float> view_tapes_[8];
 
     std::atomic<bool> can_play_through_{false};
     std::atomic<bool> can_record_{false};

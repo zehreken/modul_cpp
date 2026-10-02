@@ -20,6 +20,7 @@ class Tape {
     void add(const std::vector<float> other);
     float read(size_t index);
     void write(float sample);
+    std::vector<float> get_view_copy() const;
 
   private:
     float volume_;
