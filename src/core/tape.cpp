@@ -1,4 +1,5 @@
 #include "core/tape.hpp"
+#include "constants.hpp"
 // #include <iostream>
 
 Tape::Tape(size_t length) : audio_(length) {
@@ -90,9 +91,9 @@ void Tape::write(float sample) {
 }
 
 std::vector<float> Tape::get_view_copy() const {
-    auto bin_size = audio_.size() / 512;
-    auto view_copy = std::vector<float>(512);
-    for (int i = 0; i < 512; ++i) {
+    auto bin_size = audio_.size() / constants::TAPE_VIEW_SIZE;
+    auto view_copy = std::vector<float>(constants::TAPE_VIEW_SIZE);
+    for (int i = 0; i < constants::TAPE_VIEW_SIZE; ++i) {
         float max = 0.0f;
         size_t start = i * bin_size;
         size_t end = start + bin_size;

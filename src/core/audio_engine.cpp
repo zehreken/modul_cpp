@@ -1,4 +1,5 @@
 #include "core/audio_engine.hpp"
+#include "constants.hpp"
 
 #define MINIAUDIO_IMPLEMENTATION
 #include "miniaudio.h"
@@ -54,7 +55,7 @@ bool AudioEngine::init(ProjectConfig project_config) {
     }
 
     for (auto& view_tape : view_tapes_) {
-        view_tape = std::vector<float>(512, 0.0f);
+        view_tape = std::vector<float>(constants::TAPE_VIEW_SIZE, 0.0f);
     }
     //  what is tape length? tape length = bar_count * sample_rate,
     //  assuming tapes are mono

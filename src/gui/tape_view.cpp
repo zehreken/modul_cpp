@@ -1,4 +1,5 @@
 #include "gui/tape_view.hpp"
+#include "constants.hpp"
 #include "imgui.h"
 
 TapeView::TapeView() {}
@@ -20,7 +21,14 @@ void TapeView::render(AudioEngine& audio_engine, bool* show) {
 
         float* tape_data = audio_engine.get_view_tape(i).data();
         ImGui::PlotLines(
-            "##Tape", tape_data, 512, 0, nullptr, -1.0f, 1.0f, ImVec2(0, 150)
+            "##Tape",
+            tape_data,
+            constants::TAPE_VIEW_SIZE,
+            0,
+            nullptr,
+            -1.0f,
+            1.0f,
+            ImVec2(0, 150)
         );
 
         ImGui::PopID();
