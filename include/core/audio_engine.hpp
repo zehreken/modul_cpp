@@ -81,6 +81,7 @@ class AudioEngine {
     static constexpr size_t BUFFER_SIZE = 128; // In frames
 
     int get_bpm() { return bpm_; };
+    int get_tape_length() { return tape_length_; }
     int get_frame_index() {
         return published_frame_index_.load(std::memory_order_relaxed);
     };
@@ -114,6 +115,7 @@ class AudioEngine {
     float phase_{0.0};
 
     size_t frame_index_{0};
+    size_t tape_length_{0};
     std::atomic<int> published_frame_index_{0}; // For UI
 
     float scope_buffer_[BUFFER_SIZE * 2]{0.0f};

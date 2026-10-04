@@ -12,8 +12,11 @@ void TapeView::render(AudioEngine& audio_engine, bool* show) {
     if (ImGui::Button("Clear")) {
         audio_engine.get_tape(selected_tape).clear();
     }
-    int frame_index = audio_engine.get_frame_index() % 192000;
-    ImGui::SliderInt("Tape", &frame_index, 0, 192000, "%1");
+    int frame_index =
+        audio_engine.get_frame_index() % audio_engine.get_tape_length();
+    ImGui::SliderInt(
+        "Tape", &frame_index, 0, audio_engine.get_tape_length(), "%1"
+    );
 
     for (int i = 0; i < 8; ++i) {
         ImGui::PushID(i);

@@ -43,15 +43,18 @@ AudioEngine::~AudioEngine() {
 };
 
 bool AudioEngine::init(ProjectConfig project_config) {
-    std::cout << project_config.bpm_ << " " << project_config.bar_count_ << " "
-              << std::endl;
+    std::cout << "BPM: " << project_config.bpm_
+              << " Bar count: " << project_config.bar_count_ << std::endl;
     metronome_ = std::make_unique<Metronome>(project_config.bpm_, 48000.0f);
 
-    size_t length = static_cast<size_t>(project_config.bar_count_) *
-                    48000; // sample rate should not be hardcoded
-    recording_tape_ = Tape{length};
+    // Currently music time is 4/4, based on this bar length is 4 / (BPM / 60)
+    // Sample rate is hardcoded (48000)
+    tape_length_ =
+        project_config.bar_count_ * 4 * 60 * 48000 / project_config.bpm_;
+
+    recording_tape_ = Tape{tape_length_};
     for (auto& tape : tapes_) {
-        tape = Tape(length);
+        tape = Tape(tape_length_);
     }
 
     for (auto& view_tape : view_tapes_) {
