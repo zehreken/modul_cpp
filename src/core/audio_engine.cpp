@@ -1,5 +1,4 @@
 #include "core/audio_engine.hpp"
-#include "constants.hpp"
 
 #define MINIAUDIO_IMPLEMENTATION
 #include "miniaudio.h"
@@ -284,19 +283,26 @@ void AudioEngine::process_audio(
         if (can_record_) {
             // recording_tape_.write((in_left + in_right) * 0.5f);
             tapes_[selected_tape_].write((in_left + in_right) * 0.5f);
-        } else {
-            float tape_sum_left = 0.0f;
-            float tape_sum_right = 0.0f;
-            for (Tape& tape : tapes_) {
-                float v = tape.read(frame_index_) * tape.get_volume();
-                float half_pan = tape.get_pan() / 2.0f;
-                tape_sum_left += v * (0.5f - half_pan);
-                tape_sum_right += v * (0.5f + half_pan);
-            }
-            // float tape_value = recording_tape_.read(frame_index_);
-            out_left = (out_left + tape_sum_left) * 0.5f;
-            out_right = (out_right + tape_sum_right) * 0.5f;
         }
+
+        float tape_sum_left = 0.0f;
+        float tape_sum_right = 0.0f;
+        bool has_solo = solo_flags_ > 0;
+        for (size_t i = 0; i < constants::TAPE_COUNT; ++i) {
+            bool audible = has_solo ? is_tape_solo(i) : !is_tape_mute(i);
+
+            if (!audible)
+                continue;
+
+            auto& tape = tapes_[i];
+            float v = tape.read(frame_index_) * tape.get_volume();
+            float half_pan = tape.get_pan() / 2.0f;
+            tape_sum_left += v * (0.5f - half_pan);
+            tape_sum_right += v * (0.5f + half_pan);
+        }
+        // float tape_value = recording_tape_.read(frame_index_);
+        out_left = (out_left + tape_sum_left) * 0.5f;
+        out_right = (out_right + tape_sum_right) * 0.5f;
 
         out_left = out_left * vol;
         out_right = out_right * vol;
@@ -341,6 +347,26 @@ void AudioEngine::copy_recording(float* out_target, size_t count) {
 }
 
 Tape& AudioEngine::get_tape(size_t id) { return tapes_[id]; }
+
+void AudioEngine::toggle_mute_tape(size_t id) {
+    uint8_t v = 1 << id;
+    mute_flags_.fetch_xor(v, std::memory_order_relaxed);
+}
+
+bool AudioEngine::is_tape_mute(size_t id) {
+    uint8_t v = 1 << id;
+    return (mute_flags_ & v) > 0;
+}
+
+void AudioEngine::toggle_solo_tape(size_t id) {
+    uint8_t v = 1 << id;
+    solo_flags_.fetch_xor(v, std::memory_order_relaxed);
+}
+
+bool AudioEngine::is_tape_solo(size_t id) {
+    uint8_t v = 1 << id;
+    return (solo_flags_ & v) > 0;
+}
 
 std::vector<float>& AudioEngine::get_view_tape(size_t id) {
     return view_tapes_[id];

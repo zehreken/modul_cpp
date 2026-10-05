@@ -18,7 +18,7 @@ void TapeView::render(AudioEngine& audio_engine, bool* show) {
         "Tape", &frame_index, 0, audio_engine.get_tape_length(), "%1"
     );
 
-    for (int i = 0; i < 8; ++i) {
+    for (int i = 0; i < constants::TAPE_COUNT; ++i) {
         ImGui::PushID(i);
         // ImGui::BeginChild("##Tape")
 

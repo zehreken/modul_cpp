@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 
+#include "constants.hpp"
 #include "core/metronome.hpp"
 #include "core/tape.hpp"
 
@@ -71,6 +72,10 @@ class AudioEngine {
 
     void copy_recording(float* out_target, size_t count);
     Tape& get_tape(size_t id);
+    void toggle_mute_tape(size_t id);
+    bool is_tape_mute(size_t id);
+    void toggle_solo_tape(size_t id);
+    bool is_tape_solo(size_t id);
     std::vector<float>& get_view_tape(size_t id);
 
     void set_selected_tape(size_t id);
@@ -122,11 +127,13 @@ class AudioEngine {
     size_t scope_write_index_{0};
 
     Tape recording_tape_;
-    Tape tapes_[8];
-    std::vector<float> view_tapes_[8];
+    Tape tapes_[constants::TAPE_COUNT];
+    std::vector<float> view_tapes_[constants::TAPE_COUNT];
 
     std::atomic<bool> can_play_through_{false};
     std::atomic<bool> can_record_{false};
     std::atomic<bool> can_metronome_run_{false};
     std::atomic<size_t> selected_tape_{0};
+    std::atomic<std::uint8_t> mute_flags_{0};
+    std::atomic<std::uint8_t> solo_flags_{0};
 };
