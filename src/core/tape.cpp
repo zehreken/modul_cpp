@@ -7,7 +7,6 @@ Tape::Tape(size_t length) : audio_(length) {
     pan_ = 0.0f;
     is_muted_ = false;
     is_solo_ = false;
-    record_index_ = 0;
 }
 
 float Tape::get_volume() { return is_muted_ ? 0.0f : volume_; }
@@ -78,16 +77,12 @@ float Tape::read(size_t index) {
     return audio_[index];
 }
 
-void Tape::write(float sample) {
+void Tape::write(size_t index, float sample) {
     if (audio_.size() == 0) {
         return;
     }
-    audio_[record_index_] = sample;
-    record_index_++;
-    // std::cout << record_index_ << " " << sample << std::endl;
-    if (record_index_ >= audio_.size()) {
-        record_index_ = 0;
-    }
+    auto record_index = index % audio_.size();
+    audio_[record_index] = sample;
 }
 
 std::vector<float> Tape::get_view_copy() const {

@@ -19,7 +19,7 @@ class Tape {
     void clear();
     void add(const std::vector<float> other);
     float read(size_t index);
-    void write(float sample);
+    void write(size_t index, float sample);
     std::vector<float> get_view_copy() const;
 
   private:
@@ -27,6 +27,5 @@ class Tape {
     float pan_;
     bool is_muted_;
     bool is_solo_;
-    size_t record_index_;      // Cursor
     std::vector<float> audio_; // Tape is mono by design
 };

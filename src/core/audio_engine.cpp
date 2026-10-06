@@ -282,7 +282,9 @@ void AudioEngine::process_audio(
 
         if (can_record_) {
             // recording_tape_.write((in_left + in_right) * 0.5f);
-            tapes_[selected_tape_].write((in_left + in_right) * 0.5f);
+            tapes_[selected_tape_].write(
+                frame_index_, (in_left + in_right) * 0.5f
+            );
         }
 
         float tape_sum_left = 0.0f;
