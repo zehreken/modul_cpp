@@ -58,19 +58,5 @@ void ScopeView::render(AudioEngine& audio_engine, bool* show) {
         ImVec2(0, 150)
     );
 
-    ImGui::Text("Left Channel:");
-    float recording_buffer[48000]{0.0f};
-    audio_engine.copy_recording(recording_buffer, 48000);
-    ImGui::PlotLines(
-        "##Recording",
-        recording_buffer,
-        AudioEngine::BUFFER_SIZE,
-        0,
-        nullptr,
-        -1.0f,
-        1.0f,
-        ImVec2(0, 150)
-    );
-
     ImGui::End();
 }

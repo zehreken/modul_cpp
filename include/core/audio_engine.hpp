@@ -70,7 +70,6 @@ class AudioEngine {
     bool can_metronome_beep() { return metronome_->can_beep(); };
     int get_beat_count() { return metronome_->get_beat_count(); };
 
-    void copy_recording(float* out_target, size_t count);
     Tape& get_tape(size_t id);
     void toggle_mute_tape(size_t id);
     bool is_tape_mute(size_t id);

@@ -342,12 +342,6 @@ void AudioEngine::toggle_metronome() {
     can_metronome_run_ = !can_metronome_run_;
 }
 
-void AudioEngine::copy_recording(float* out_target, size_t count) {
-    for (size_t i = 0; i < count; ++i) {
-        *out_target++ = recording_tape_.read(i);
-    }
-}
-
 Tape& AudioEngine::get_tape(size_t id) { return tapes_[id]; }
 
 void AudioEngine::toggle_mute_tape(size_t id) {
