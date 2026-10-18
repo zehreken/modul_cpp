@@ -4,6 +4,7 @@
 #include <GLFW/glfw3.h>
 #include <glad/glad.h>
 #include <iostream>
+#include <tracy/Tracy.hpp>
 
 #include "core/audio_engine.hpp"
 #include "gui/main_view.hpp"
@@ -110,6 +111,7 @@ int main() {
 
         ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
         glfwSwapBuffers(window);
+        FrameMark;
     }
 
     // Cleanup
