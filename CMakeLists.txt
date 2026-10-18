@@ -33,6 +33,19 @@ CPMAddPackage(
     OPTIONS "GLM_BUILD_LIBRARY OFF"
 )
 
+# Tracy — frame/zone profiler client. Exports Tracy::TracyClient, which carries
+# its include path and the TRACY_ENABLE define, so no wrapping needed either.
+#
+# The tag must match the viewer (tracy-profiler.exe) version exactly, or the
+# viewer refuses the connection. With TRACY_ENABLE OFF every Tracy macro
+# compiles to nothing, so instrumentation can stay in the code.
+CPMAddPackage(
+    NAME tracy
+    GITHUB_REPOSITORY wolfpld/tracy
+    GIT_TAG v0.14.1
+    OPTIONS "TRACY_ENABLE ON"
+)
+
 # 3. Build Dear ImGui (+ GLFW/OpenGL3 backends) as its own static library.
 #    Compiles once, stays out of our own warning flags, and keeps the app
 #    target's source list down to just our code.
@@ -150,9 +163,9 @@ endif()
 
 # 10. Link libraries cross-platform (glfw arrives transitively via imgui)
 if(APPLE)
-    target_link_libraries(modul_app PRIVATE imgui glad dj_fft glm::glm "-framework OpenGL" "-framework Cocoa" "-framework IOKit" "-framework CoreVideo")
+    target_link_libraries(modul_app PRIVATE imgui glad dj_fft glm::glm Tracy::TracyClient "-framework OpenGL" "-framework Cocoa" "-framework IOKit" "-framework CoreVideo")
 elseif(WIN32)
-    target_link_libraries(modul_app PRIVATE imgui glad dj_fft glm::glm opengl32)
+    target_link_libraries(modul_app PRIVATE imgui glad dj_fft glm::glm Tracy::TracyClient opengl32)
 else()
-    target_link_libraries(modul_app PRIVATE imgui glad dj_fft glm::glm GL pthread dl)
+    target_link_libraries(modul_app PRIVATE imgui glad dj_fft glm::glm Tracy::TracyClient GL pthread dl)
 endif()
