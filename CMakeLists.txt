@@ -4,6 +4,18 @@ project(ModulCpp LANGUAGES CXX C)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+# Release keeps full optimization but also emits a PDB, so profilers
+# (Superluminal, Tracy callstacks) can resolve symbols. RelWithDebInfo isn't
+# used because MSVC gives it /Ob1, which inlines less than Release's /Ob2.
+# /DEBUG turns off /OPT:REF and /OPT:ICF by default, so they're restored here.
+# Set before the CPM fetches so the dependencies (imgui, glfw, tracy) get the
+# same flags.
+if(MSVC)
+    string(APPEND CMAKE_CXX_FLAGS_RELEASE " /Zi")
+    string(APPEND CMAKE_C_FLAGS_RELEASE " /Zi")
+    string(APPEND CMAKE_EXE_LINKER_FLAGS_RELEASE " /DEBUG /OPT:REF /OPT:ICF")
+endif()
+
 # 1. Include package manager script
 include(cmake/CPM.cmake)
 

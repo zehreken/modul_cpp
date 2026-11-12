@@ -1,5 +1,6 @@
 # Build output (CMake + CPM fetches deps into build/_deps)
 build/
+build-release/
 out/
 cmake-build-*/
 install/
