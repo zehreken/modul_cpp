@@ -82,8 +82,8 @@ int main() {
     }
 
     while (!glfwWindowShouldClose(window)) {
-        ZoneScopedN("PollEvents");
         {
+            ZoneScopedN("PollEvents");
             glfwPollEvents();
         }
 
@@ -96,14 +96,20 @@ int main() {
         elapsed_time = glfwGetTime();
         main_view.render(audio_engine, *scene);
 
-        ImGui::Render();
+        {
+            ZoneScopedN("ImGui.Render");
+            ImGui::Render();
+        }
         int display_w, display_h;
         glfwGetFramebufferSize(window, &display_w, &display_h);
         glViewport(0, 0, display_w, display_h);
         glClearColor(1.0f, 0.0f, 0.33f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        audio_engine.update();
+        {
+            ZoneScopedN("AudioEngine.Update");
+            audio_engine.update();
+        }
 
         float* frame_buffer = audio_engine.get_scope_buffer();
         float sum = 0.0f;
