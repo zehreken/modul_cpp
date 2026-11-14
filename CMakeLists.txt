@@ -29,7 +29,7 @@ CPMAddPackage(
 CPMAddPackage(
     NAME imgui
     GITHUB_REPOSITORY ocornut/imgui
-    GIT_TAG v1.92.2
+    GIT_TAG v1.92.2-docking
 )
 
 # glm — vector/matrix math, GLSL-shaped API. Exports a glm::glm target of its

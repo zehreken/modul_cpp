@@ -52,6 +52,7 @@ int main() {
 
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
+    ImGui::GetIO().ConfigFlags |= ImGuiConfigFlags_DockingEnable;
     ImGui::StyleColorsDark();
     ImGuiStyle& style = ImGui::GetStyle();
     style.ScaleAllSizes(scale_x);
