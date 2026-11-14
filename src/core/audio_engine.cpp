@@ -69,7 +69,7 @@ bool AudioEngine::init(ProjectConfig project_config) {
 }
 
 void AudioEngine::update() {
-    void* read_buffer;
+    void* read_buffer = nullptr;
     ma_result result;
     ma_uint32 frame_count = static_cast<ma_uint32>(BUFFER_SIZE);
     result = ma_pcm_rb_acquire_read(&impl_->rb_, &frame_count, &read_buffer);
@@ -98,11 +98,11 @@ void AudioEngine::shutdown() {
 
 AudioDevices AudioEngine::get_audio_devices() {
     std::vector<AudioDeviceInfo> playback_devices;
-    ma_device_info* playback_infos;
+    ma_device_info* playback_infos = nullptr;
     ma_uint32 playback_count;
 
     std::vector<AudioDeviceInfo> capture_devices;
-    ma_device_info* capture_infos;
+    ma_device_info* capture_infos = nullptr;
     ma_uint32 capture_count;
 
     if (ma_context_get_devices(
@@ -175,9 +175,9 @@ bool AudioEngine::select_devices(
     config.dataCallback = AudioEngine::c_audio_callback;
     config.pUserData = this;
 
-    ma_device_info* playback_infos;
+    ma_device_info* playback_infos = nullptr;
     ma_uint32 playback_count;
-    ma_device_info* capture_infos;
+    ma_device_info* capture_infos = nullptr;
     ma_uint32 capture_count;
     if (ma_context_get_devices(
             &impl_->context_,
@@ -231,7 +231,7 @@ void AudioEngine::process_audio(
     ma_uint32 frames_written;
     frames_written = 0;
     while (frames_written < frame_count) {
-        void* write_buffer;
+        void* write_buffer = nullptr;
         ma_uint32 frames_to_write = frame_count - frames_written;
 
         result = ma_pcm_rb_acquire_write(
@@ -362,6 +362,11 @@ void AudioEngine::toggle_solo_tape(size_t id) {
 bool AudioEngine::is_tape_solo(size_t id) {
     uint8_t v = 1 << id;
     return (solo_flags_ & v) > 0;
+}
+
+void AudioEngine::clear_tape(size_t id) {
+    tapes_[id].clear();
+    view_tapes_[id] = tapes_[id].get_view_copy();
 }
 
 std::vector<float>& AudioEngine::get_view_tape(size_t id) {

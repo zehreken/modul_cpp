@@ -1,7 +1,6 @@
 #pragma once
 
 #include <atomic>
-#include <cstddef>
 #include <memory>
 #include <string>
 #include <vector>
@@ -75,6 +74,7 @@ class AudioEngine {
     bool is_tape_mute(size_t id);
     void toggle_solo_tape(size_t id);
     bool is_tape_solo(size_t id);
+    void clear_tape(size_t id);
     std::vector<float>& get_view_tape(size_t id);
 
     void set_selected_tape(size_t id);

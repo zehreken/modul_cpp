@@ -9,9 +9,6 @@ void TapeView::render(AudioEngine& audio_engine, bool* show) {
 
     auto selected_tape = audio_engine.get_selected_tape();
     ImGui::Text("Selected tape: %d", selected_tape + 1);
-    if (ImGui::Button("Clear")) {
-        audio_engine.get_tape(selected_tape).clear();
-    }
     int frame_index =
         audio_engine.get_frame_index() % audio_engine.get_tape_length();
     ImGui::SliderInt(
@@ -31,8 +28,12 @@ void TapeView::render(AudioEngine& audio_engine, bool* show) {
             nullptr,
             -1.0f,
             1.0f,
-            ImVec2(0, 150)
+            ImVec2(0, 50)
         );
+        ImGui::SameLine();
+        if (ImGui::Button("C")) {
+            audio_engine.clear_tape(i);
+        }
 
         ImGui::PopID();
     }
