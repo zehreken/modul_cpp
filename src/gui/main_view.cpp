@@ -18,23 +18,17 @@ void MainView::render(AudioEngine& audio_engine, Scene& scene) {
             ImGui::EndMenu();
         }
         if (ImGui::BeginMenu("Windows")) {
-            if (ImGui::MenuItem("Device")) {
-                show_devices_view_ = !show_devices_view_;
+            if (ImGui::MenuItem("Device", nullptr, &show_devices_view_)) {
             }
-            if (ImGui::MenuItem("Scope")) {
-                show_scope_view_ = !show_scope_view_;
+            if (ImGui::MenuItem("Scope", nullptr, &show_scope_view_)) {
             }
-            if (ImGui::MenuItem("Mixer")) {
-                show_mixer_view_ = !show_mixer_view_;
+            if (ImGui::MenuItem("Mixer", nullptr, &show_mixer_view_)) {
             }
-            if (ImGui::MenuItem("Metronome")) {
-                show_metronome_view_ = !show_metronome_view_;
+            if (ImGui::MenuItem("Metronome", nullptr, &show_metronome_view_)) {
             }
-            if (ImGui::MenuItem("Renderers")) {
-                show_render_view_ = !show_render_view_;
+            if (ImGui::MenuItem("Renderers", nullptr, &show_render_view_)) {
             }
-            if (ImGui::MenuItem("Tapes")) {
-                show_tape_view_ = !show_tape_view_;
+            if (ImGui::MenuItem("Tapes", nullptr, &show_tape_view_)) {
             }
             ImGui::EndMenu();
         }
