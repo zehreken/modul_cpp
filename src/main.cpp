@@ -90,6 +90,9 @@ int main() {
         ImGui_ImplOpenGL3_NewFrame();
         ImGui_ImplGlfw_NewFrame();
         ImGui::NewFrame();
+        ImGui::DockSpaceOverViewport(
+            0, ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode
+        );
 
         // FIX: Calculate delta time, unused atm
         double delta_time = glfwGetTime() - elapsed_time;
