@@ -39,6 +39,10 @@ void MixerView::render(AudioEngine& audio_engine, bool* show) {
     // Master pan and volume
     ImGui::BeginChild("##Child", ImVec2{width, 500.0f});
     ImGui::Text("Master");
+    const char* mute_label = audio_engine.is_master_mute() ? "M" : "m";
+    if (ImGui::Button(mute_label)) {
+        audio_engine.toggle_master_mute();
+    }
     float master_pan = 0.0f;
     ImGui::SetNextItemWidth(width);
     if (ImGui::SliderFloat("##Pan", &master_pan, -1.0f, 1.0f, "%.2f")) {

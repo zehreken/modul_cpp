@@ -224,6 +224,8 @@ void AudioEngine::process_audio(
     unsigned int frame_count
 ) {
     float freq = frequency_.load(std::memory_order_relaxed);
+    float mute_factor =
+        master_mute_.load(std::memory_order_relaxed) ? 0.0f : 1.0f;
     float vol = master_volume_.load(std::memory_order_relaxed);
     float phase_incr = (TWO_PI * freq) / SAMPLE_RATE;
 
@@ -308,8 +310,8 @@ void AudioEngine::process_audio(
         out_left = (out_left + tape_sum_left) * 0.5f;
         out_right = (out_right + tape_sum_right) * 0.5f;
 
-        out_left = out_left * vol;
-        out_right = out_right * vol;
+        out_left = out_left * vol * mute_factor;
+        out_right = out_right * vol * mute_factor;
 
         *output++ = out_left;
         *output++ = out_right;
@@ -343,6 +345,10 @@ bool AudioEngine::can_record() { return can_record_; }
 void AudioEngine::toggle_metronome() {
     can_metronome_run_ = !can_metronome_run_;
 }
+
+bool AudioEngine::is_master_mute() const { return master_mute_; }
+
+void AudioEngine::toggle_master_mute() { master_mute_ = !master_mute_; }
 
 void AudioEngine::toggle_mute_tape(size_t id) {
     uint8_t v = 1 << id;

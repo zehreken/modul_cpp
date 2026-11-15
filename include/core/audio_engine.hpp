@@ -69,6 +69,8 @@ class AudioEngine {
     bool can_metronome_beep() const { return metronome_->can_beep(); };
     int get_beat_count() const { return metronome_->get_beat_count(); };
 
+    bool is_master_mute() const;
+    void toggle_master_mute();
     void toggle_mute_tape(size_t id);
     bool is_tape_mute(size_t id) const;
     void toggle_solo_tape(size_t id);
@@ -118,6 +120,7 @@ class AudioEngine {
     std::unique_ptr<Metronome> metronome_;
 
     std::atomic<float> frequency_{440.0f};
+    std::atomic<bool> master_mute_{false};
     std::atomic<float> master_volume_{0.5f};
     float phase_{0.0};
 
