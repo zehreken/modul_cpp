@@ -66,14 +66,17 @@ class AudioEngine {
     bool can_record();
 
     void toggle_metronome();
-    bool can_metronome_beep() { return metronome_->can_beep(); };
-    int get_beat_count() { return metronome_->get_beat_count(); };
+    bool can_metronome_beep() const { return metronome_->can_beep(); };
+    int get_beat_count() const { return metronome_->get_beat_count(); };
 
-    Tape& get_tape(size_t id);
     void toggle_mute_tape(size_t id);
-    bool is_tape_mute(size_t id);
+    bool is_tape_mute(size_t id) const;
     void toggle_solo_tape(size_t id);
-    bool is_tape_solo(size_t id);
+    bool is_tape_solo(size_t id) const;
+    float get_tape_pan(size_t id) const;
+    void set_tape_pan(size_t id, float pan);
+    float get_tape_volume(size_t id) const;
+    void set_tape_volume(size_t id, float volume);
     void clear_tape(size_t id);
     std::vector<float>& get_view_tape(size_t id);
 
@@ -115,7 +118,7 @@ class AudioEngine {
     std::unique_ptr<Metronome> metronome_;
 
     std::atomic<float> frequency_{440.0f};
-    std::atomic<float> master_volume_{0.2f};
+    std::atomic<float> master_volume_{0.5f};
     float phase_{0.0};
 
     size_t frame_index_{0};
@@ -133,6 +136,10 @@ class AudioEngine {
     std::atomic<bool> can_record_{false};
     std::atomic<bool> can_metronome_run_{false};
     std::atomic<size_t> selected_tape_{0};
+    std::atomic<float> tape_volumes_[constants::TAPE_COUNT]{
+        1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f, 1.0f
+    };
+    std::atomic<float> tape_pans_[constants::TAPE_COUNT];
     std::atomic<std::uint8_t> mute_flags_{0};
     std::atomic<std::uint8_t> solo_flags_{0};
 };

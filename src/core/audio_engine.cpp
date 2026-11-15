@@ -297,8 +297,10 @@ void AudioEngine::process_audio(
                 continue;
 
             auto& tape = tapes_[i];
-            float v = tape.read(frame_index_) * tape.get_volume();
-            float half_pan = tape.get_pan() / 2.0f;
+            float v = tape.read(frame_index_) *
+                      tape_volumes_[i].load(std::memory_order_relaxed);
+            float half_pan =
+                tape_pans_[i].load(std::memory_order_relaxed) / 2.0f;
             tape_sum_left += v * (0.5f - half_pan);
             tape_sum_right += v * (0.5f + half_pan);
         }
@@ -342,14 +344,12 @@ void AudioEngine::toggle_metronome() {
     can_metronome_run_ = !can_metronome_run_;
 }
 
-Tape& AudioEngine::get_tape(size_t id) { return tapes_[id]; }
-
 void AudioEngine::toggle_mute_tape(size_t id) {
     uint8_t v = 1 << id;
     mute_flags_.fetch_xor(v, std::memory_order_relaxed);
 }
 
-bool AudioEngine::is_tape_mute(size_t id) {
+bool AudioEngine::is_tape_mute(size_t id) const {
     uint8_t v = 1 << id;
     return (mute_flags_ & v) > 0;
 }
@@ -359,9 +359,25 @@ void AudioEngine::toggle_solo_tape(size_t id) {
     solo_flags_.fetch_xor(v, std::memory_order_relaxed);
 }
 
-bool AudioEngine::is_tape_solo(size_t id) {
+bool AudioEngine::is_tape_solo(size_t id) const {
     uint8_t v = 1 << id;
     return (solo_flags_ & v) > 0;
+}
+
+float AudioEngine::get_tape_pan(size_t id) const {
+    return tape_pans_[id].load(std::memory_order_relaxed);
+}
+
+void AudioEngine::set_tape_pan(size_t id, float pan) {
+    tape_pans_[id].store(pan, std::memory_order_relaxed);
+}
+
+float AudioEngine::get_tape_volume(size_t id) const {
+    return tape_volumes_[id].load(std::memory_order_relaxed);
+}
+
+void AudioEngine::set_tape_volume(size_t id, float volume) {
+    tape_volumes_[id].store(volume, std::memory_order_relaxed);
 }
 
 void AudioEngine::clear_tape(size_t id) {
@@ -378,6 +394,7 @@ void AudioEngine::set_selected_tape(size_t id) {
         selected_tape_.store(id, std::memory_order_relaxed);
 }
 
+// TODO: this should named to id
 size_t AudioEngine::get_selected_tape() {
     return selected_tape_.load(std::memory_order_relaxed);
 }

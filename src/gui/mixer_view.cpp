@@ -20,17 +20,17 @@ void MixerView::render(AudioEngine& audio_engine, bool* show) {
         if (ImGui::Button(solo_label)) {
             audio_engine.toggle_solo_tape(i);
         }
-        float pan = audio_engine.get_tape(i).get_pan();
+        float pan = audio_engine.get_tape_pan(i);
         ImGui::SetNextItemWidth(width);
         if (ImGui::SliderFloat("##Pan", &pan, -1.0f, 1.0f, "%.2f")) {
-            audio_engine.get_tape(i).set_pan(pan);
+            audio_engine.set_tape_pan(i, pan);
         }
-        float volume = audio_engine.get_tape(i).get_volume();
+        float volume = audio_engine.get_tape_volume(i);
         const ImVec2 size = ImVec2{width, 400.0f};
         if (ImGui::VSliderFloat(
                 "##Volume", size, &volume, 0.0f, 1.0f, "%.2f"
             )) {
-            audio_engine.get_tape(i).set_volume(volume);
+            audio_engine.set_tape_volume(i, volume);
         }
         ImGui::EndChild();
         ImGui::SameLine();

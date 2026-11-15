@@ -5,17 +5,6 @@
 class Tape {
   public:
     explicit Tape(size_t length = 0);
-    float get_volume();
-    void set_volume(float vol);
-    float get_pan();
-    void set_pan(float pan);
-    void toggle_mute();
-    void toggle_solo();
-    bool is_solo();
-    void volume_up();
-    void volume_down();
-    void pan_left();
-    void pan_right();
     void clear();
     void add(const std::vector<float> other);
     float read(size_t index);
@@ -23,9 +12,5 @@ class Tape {
     std::vector<float> get_view_copy() const;
 
   private:
-    float volume_;
-    float pan_;
-    bool is_muted_;
-    bool is_solo_;
     std::vector<float> audio_; // Tape is mono by design
 };

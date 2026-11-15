@@ -2,58 +2,7 @@
 #include "constants.hpp"
 // #include <iostream>
 
-Tape::Tape(size_t length) : audio_(length) {
-    volume_ = 1.0f;
-    pan_ = 0.0f;
-    is_muted_ = false;
-    is_solo_ = false;
-}
-
-float Tape::get_volume() { return is_muted_ ? 0.0f : volume_; }
-
-void Tape::set_volume(float vol) { volume_ = vol; }
-
-float Tape::get_pan() { return pan_; }
-
-void Tape::set_pan(float pan) { pan_ = pan; }
-
-void Tape::toggle_mute() { is_muted_ = !is_muted_; }
-
-void Tape::toggle_solo() { is_solo_ = !is_solo_; }
-
-bool Tape::is_solo() { return is_solo_; }
-
-void Tape::volume_up() {
-    if (volume_ < 1.0f) {
-        volume_ += 0.01f;
-    } else {
-        volume_ = 1.0f;
-    }
-}
-
-void Tape::volume_down() {
-    if (volume_ > 0.0f) {
-        volume_ -= 0.01f;
-    } else {
-        volume_ = 0.0f;
-    }
-}
-
-void Tape::pan_left() {
-    if (pan_ > -1.0) {
-        pan_ -= 0.01;
-    } else {
-        pan_ = -1.0f;
-    }
-}
-
-void Tape::pan_right() {
-    if (pan_ < 1.0f) {
-        pan_ += 0.01;
-    } else {
-        pan_ = 1.0f;
-    }
-}
+Tape::Tape(size_t length) : audio_(length) {}
 
 void Tape::clear() {
     // This and the for loop are equivalent
