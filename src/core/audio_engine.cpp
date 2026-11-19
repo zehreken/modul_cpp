@@ -17,14 +17,15 @@ struct AudioEngine::Impl {
 };
 
 AudioEngine::AudioEngine() : impl_(new Impl()) {
-    if (ma_pcm_rb_init(
-            ma_format_f32,
-            2,
-            AudioEngine::BUFFER_SIZE,
-            nullptr,
-            nullptr,
-            &impl_->rb_
-        ) == MA_SUCCESS) {
+    ma_result result = ma_pcm_rb_init(
+        ma_format_f32,
+        2,
+        AudioEngine::BUFFER_SIZE,
+        nullptr,
+        nullptr,
+        &impl_->rb_
+    );
+    if (result == MA_SUCCESS) {
         std::cout << "Successfully created ring buffer" << std::endl;
     } else {
         std::cout << "Failed to create ring buffer" << std::endl;
@@ -51,7 +52,6 @@ bool AudioEngine::init(ProjectConfig project_config) {
     tape_length_ =
         project_config.bar_count_ * 4 * 60 * 48000 / project_config.bpm_;
 
-    recording_tape_ = Tape{tape_length_};
     for (auto& tape : tapes_) {
         tape = Tape(tape_length_);
     }
@@ -255,7 +255,7 @@ void AudioEngine::process_audio(
             device->capture.format,
             device->capture.channels
         );
-        ma_result result = ma_pcm_rb_commit_write(&impl_->rb_, frames_to_write);
+        result = ma_pcm_rb_commit_write(&impl_->rb_, frames_to_write);
         if (result != MA_SUCCESS) {
             break;
         }

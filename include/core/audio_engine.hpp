@@ -13,7 +13,7 @@ struct ProjectConfig {
     int bpm_{120};
     int bar_count_{4};
     int selected_playback_device_id_{0};
-    int seelcted_capture_device_id_{0};
+    int selected_capture_device_id_{0};
 };
 
 struct AudioDeviceInfo {
@@ -128,10 +128,9 @@ class AudioEngine {
     size_t tape_length_{0};
     std::atomic<int> published_frame_index_{0}; // For UI
 
-    float scope_buffer_[BUFFER_SIZE * 2]{0.0f};
+    float scope_buffer_[BUFFER_SIZE * 2]{0.0f}; // Channel count(2) hard coded
     size_t scope_write_index_{0};
 
-    Tape recording_tape_;
     Tape tapes_[constants::TAPE_COUNT];
     std::vector<float> view_tapes_[constants::TAPE_COUNT];
 
