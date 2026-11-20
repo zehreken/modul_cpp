@@ -78,7 +78,7 @@ void AudioEngine::update() {
     }
     // std::cout << frame_count << " " << BUFFER_SIZE << '\n';
     // memcpy copies in bytes, a frame is 4 bytes * 2(channel) FIXME: hardcoded
-    std::memcpy(scope_buffer_, read_buffer, frame_count * sizeof(float) * 2);
+    std::memcpy(scope_buffer_, read_buffer, frame_count * 2 * sizeof(float));
     result = ma_pcm_rb_commit_read(&impl_->rb_, frame_count);
     if (result != MA_SUCCESS) {
         return;
