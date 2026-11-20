@@ -87,7 +87,8 @@ class AudioEngine {
 
     float* get_scope_buffer();
 
-    static constexpr size_t BUFFER_SIZE = 128; // In frames
+    static constexpr size_t PERIOD_SIZE = 64;   // In frames
+    static constexpr size_t BUFFER_SIZE = 4096; // In frames
 
     int get_bpm() { return bpm_; };
     int get_tape_length() { return tape_length_; }

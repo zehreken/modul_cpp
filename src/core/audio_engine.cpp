@@ -76,7 +76,8 @@ void AudioEngine::update() {
     if (result != MA_SUCCESS) {
         return;
     }
-    // memcpy copies in bytes a frame is 4 bytes * 2(channel)
+    // std::cout << frame_count << " " << BUFFER_SIZE << '\n';
+    // memcpy copies in bytes, a frame is 4 bytes * 2(channel) FIXME: hardcoded
     std::memcpy(scope_buffer_, read_buffer, frame_count * sizeof(float) * 2);
     result = ma_pcm_rb_commit_read(&impl_->rb_, frame_count);
     if (result != MA_SUCCESS) {
@@ -171,7 +172,7 @@ bool AudioEngine::select_devices(
     config.capture.channels = 2;
     config.sampleRate = static_cast<ma_uint32>(SAMPLE_RATE);
     config.periodSizeInFrames =
-        AudioEngine::BUFFER_SIZE; // periodSizeInFrames <-> latency
+        AudioEngine::PERIOD_SIZE; // periodSizeInFrames <-> latency
     config.dataCallback = AudioEngine::c_audio_callback;
     config.pUserData = this;
 
