@@ -1,5 +1,6 @@
 #pragma once
 
+#include "gui/controls_view.hpp"
 #include "gui/metronome_view.hpp"
 #include "gui/mixer_view.hpp"
 #include "gui/render_view.hpp"
@@ -24,12 +25,14 @@ class MainView {
     MetronomeView metronome_view_;
     RenderView render_view_;
     TapeView tape_view_;
+    ControlsView controls_view_;
     bool show_devices_view_{false};
     bool show_scope_view_{false};
     bool show_mixer_view_{true};
     bool show_metronome_view_{true};
     bool show_render_view_{true};
     bool show_tape_view_{true};
+    bool show_controls_view_{true};
 
     ProjectConfig project_config_;
     AudioDevices audio_devices_;

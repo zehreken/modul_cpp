@@ -22,6 +22,8 @@ void MainView::render(AudioEngine& audio_engine, Scene& scene) {
             }
             if (ImGui::MenuItem("Scope", nullptr, &show_scope_view_)) {
             }
+            if (ImGui::MenuItem("Controls", nullptr, &show_controls_view_)) {
+            }
             if (ImGui::MenuItem("Mixer", nullptr, &show_mixer_view_)) {
             }
             if (ImGui::MenuItem("Metronome", nullptr, &show_metronome_view_)) {
@@ -75,6 +77,8 @@ void MainView::render(AudioEngine& audio_engine, Scene& scene) {
         render_view_.render(scene, &show_render_view_);
     if (show_tape_view_)
         tape_view_.render(audio_engine, &show_tape_view_);
+    if (show_controls_view_)
+        controls_view_.render(audio_engine, &show_controls_view_);
 }
 
 void MainView::render_project_popup(AudioEngine& audio_engine) {

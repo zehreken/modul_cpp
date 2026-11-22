@@ -151,6 +151,7 @@ add_executable(modul_app
     src/core/metronome.cpp
     src/gui/render_view.cpp
     src/gui/tape_view.cpp
+    src/gui/controls_view.cpp
 )
 
 # 7. Set include paths (imgui's come through the linked target)
