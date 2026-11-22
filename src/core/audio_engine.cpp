@@ -7,6 +7,7 @@
 #include <cmath>
 #include <cstring>
 #include <iostream>
+#include <thread>
 
 struct AudioEngine::Impl {
     ma_context context_;
@@ -14,7 +15,39 @@ struct AudioEngine::Impl {
     bool is_device_initialized_{false};
     bool is_context_initialized_{false};
     ma_pcm_rb rb_;
+    ma_pcm_rb disk_rb_;
+    ma_encoder encoder_;
+    std::thread write_task_;
 };
+
+void AudioEngine::write_task() {
+    while (can_write_disk_.load(std::memory_order_relaxed)) {
+        void* read_buffer = nullptr;
+        ma_result result;
+        ma_uint32 frame_count = static_cast<ma_uint32>(BUFFER_SIZE);
+        result = ma_pcm_rb_acquire_read(
+            &impl_->disk_rb_, &frame_count, &read_buffer
+        );
+        if (result != MA_SUCCESS) {
+            std::cerr << "Couldn't acquire disk_rb_ read" << '\n';
+            continue;
+        }
+        ma_encoder_write_pcm_frames(
+            &impl_->encoder_, read_buffer, frame_count, nullptr
+        );
+        result = ma_pcm_rb_commit_read(&impl_->disk_rb_, frame_count);
+        if (result != MA_SUCCESS) {
+            std::cerr << "Couldn't commit disk_rb_ read" << '\n';
+            continue;
+        }
+
+        std::this_thread::sleep_for(std::chrono::milliseconds(20));
+    }
+
+    ma_encoder_uninit(&impl_->encoder_);
+
+    std::cout << "Write thread finished" << '\n';
+}
 
 AudioEngine::AudioEngine() : impl_(new Impl()) {
     ma_result result = ma_pcm_rb_init(
@@ -25,10 +58,18 @@ AudioEngine::AudioEngine() : impl_(new Impl()) {
         nullptr,
         &impl_->rb_
     );
+    result = ma_pcm_rb_init(
+        ma_format_f32,
+        2,
+        AudioEngine::BUFFER_SIZE,
+        nullptr,
+        nullptr,
+        &impl_->disk_rb_
+    );
     if (result == MA_SUCCESS) {
-        std::cout << "Successfully created ring buffer" << std::endl;
+        std::cout << "Successfully created ring buffers" << std::endl;
     } else {
-        std::cout << "Failed to create ring buffer" << std::endl;
+        std::cout << "Failed to create ring buffers" << std::endl;
     }
     if (ma_context_init(nullptr, 0, nullptr, &impl_->context_) == MA_SUCCESS) {
         impl_->is_context_initialized_ = true;
@@ -78,6 +119,9 @@ void AudioEngine::update() {
     }
     // std::cout << frame_count << " " << BUFFER_SIZE << '\n';
     // memcpy copies in bytes, a frame is 4 bytes * 2(channel) FIXME: hardcoded
+
+    // scope_buffer_[scope_write_index_] = out_left;
+    // scope_write_index_ = (scope_write_index_ + 1) % BUFFER_SIZE;
     std::memcpy(scope_buffer_, read_buffer, frame_count * 2 * sizeof(float));
     result = ma_pcm_rb_commit_read(&impl_->rb_, frame_count);
     if (result != MA_SUCCESS) {
@@ -86,7 +130,12 @@ void AudioEngine::update() {
 }
 
 void AudioEngine::shutdown() {
+    // seq_cst
+    can_write_disk_ = false;
+    if (impl_->write_task_.joinable())
+        impl_->write_task_.join();
     ma_pcm_rb_uninit(&impl_->rb_);
+    ma_pcm_rb_uninit(&impl_->disk_rb_);
     if (impl_->is_device_initialized_) {
         ma_device_uninit(&impl_->device_);
         impl_->is_device_initialized_ = false;
@@ -264,6 +313,8 @@ void AudioEngine::process_audio(
         // std::cout << "write r2: " << r2 << std::endl;
     }
 
+    // Saving start of output
+    float* output_start = output;
     for (unsigned int i = 0; i < frame_count; ++i) {
         frame_index_++;
         metronome_->update(frame_index_);
@@ -317,14 +368,67 @@ void AudioEngine::process_audio(
         *output++ = out_left;
         *output++ = out_right;
 
-        // scope_buffer_[scope_write_index_] = out_left;
-        // scope_write_index_ = (scope_write_index_ + 1) % SCOPE_SIZE;
-
         phase_ += phase_incr;
         if (phase_ >= TWO_PI)
             phase_ -= TWO_PI;
     }
     published_frame_index_.store(frame_index_, std::memory_order_relaxed);
+
+    // Writing to disk ring_buffer
+    frames_written = 0;
+    while (frames_written < frame_count) {
+        void* write_buffer = nullptr;
+        ma_uint32 frames_to_write = frame_count - frames_written;
+
+        result = ma_pcm_rb_acquire_write(
+            &impl_->disk_rb_, &frames_to_write, &write_buffer
+        );
+        if (result != MA_SUCCESS) {
+            break;
+        }
+        if (frames_to_write == 0) {
+            break;
+        }
+        // std::cout << frame_count << " " << fc << std::endl;
+        ma_copy_pcm_frames(
+            write_buffer,
+            ma_offset_pcm_frames_const_ptr_f32(
+                (const float*)output_start,
+                frames_written,
+                device->capture.channels
+            ),
+            frames_to_write,
+            device->capture.format,
+            device->capture.channels
+        );
+        result = ma_pcm_rb_commit_write(&impl_->disk_rb_, frames_to_write);
+        if (result != MA_SUCCESS) {
+            break;
+        }
+        frames_written += frames_to_write;
+        // std::cout << "write r2: " << r2 << std::endl;
+    }
+}
+
+// Default load operation is seq_cst, I think it is fine for this use case
+void AudioEngine::toggle_write_disk() {
+    can_write_disk_ = !can_write_disk_;
+
+    if (can_write_disk_) {
+        // this can also go in Impl
+        auto config = ma_encoder_config_init(
+            ma_encoding_format_wav, ma_format_f32, 2, 48000
+        );
+        auto file_name = "song_" + frame_index_;
+        ma_result result =
+            ma_encoder_init_file(file_name, &config, &impl_->encoder_);
+        if (result == MA_SUCCESS)
+            impl_->write_task_ = std::thread(&AudioEngine::write_task, this);
+        else
+            std::cerr << "Couldn't create file" << '\n';
+    } else {
+        impl_->write_task_.join();
+    }
 }
 
 void AudioEngine::toggle_play_through() {

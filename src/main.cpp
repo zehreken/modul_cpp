@@ -153,6 +153,9 @@ void key_callback(
     if (key == GLFW_KEY_R && action == GLFW_PRESS) {
         audio_engine->toggle_record();
     }
+    if (key == GLFW_KEY_W && action == GLFW_PRESS) {
+        audio_engine->toggle_write_disk();
+    }
     if (key == GLFW_KEY_1 && action == GLFW_PRESS) {
         audio_engine->set_selected_tape(0);
     }

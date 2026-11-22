@@ -33,10 +33,13 @@ void MainView::render(AudioEngine& audio_engine, Scene& scene) {
             ImGui::EndMenu();
         }
         if (audio_engine.can_record()) {
-            ImGui::Text("Recording!");
+            ImGui::Text("||Recording||");
         }
         if (audio_engine.can_play_through()) {
-            ImGui::Text("Playing through");
+            ImGui::Text("||Playing through||");
+        }
+        if (audio_engine.can_write_disk()) {
+            ImGui::Text("||Writing to disk||");
         }
         ImGui::EndMainMenuBar();
     }

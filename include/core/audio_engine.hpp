@@ -59,6 +59,11 @@ class AudioEngine {
         return master_volume_.load(std::memory_order_relaxed);
     };
 
+    void toggle_write_disk();
+    bool can_write_disk() const {
+        return can_write_disk_.load(std::memory_order_relaxed);
+    }
+
     void toggle_play_through();
     bool can_play_through();
 
@@ -106,6 +111,7 @@ class AudioEngine {
         const void* input,
         unsigned int frame_count
     );
+    void write_task();
     void process_audio(
         ma_device* device,
         float* output,
@@ -135,6 +141,7 @@ class AudioEngine {
     Tape tapes_[constants::TAPE_COUNT];
     std::vector<float> view_tapes_[constants::TAPE_COUNT];
 
+    std::atomic<bool> can_write_disk_{false};
     std::atomic<bool> can_play_through_{false};
     std::atomic<bool> can_record_{false};
     std::atomic<bool> can_metronome_run_{false};
