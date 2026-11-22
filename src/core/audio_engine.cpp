@@ -7,6 +7,7 @@
 #include <cmath>
 #include <cstring>
 #include <iostream>
+#include <string>
 #include <thread>
 
 struct AudioEngine::Impl {
@@ -419,9 +420,10 @@ void AudioEngine::toggle_write_disk() {
         auto config = ma_encoder_config_init(
             ma_encoding_format_wav, ma_format_f32, 2, 48000
         );
-        auto file_name = "song_" + frame_index_;
+        std::string file_name = "song_";
+        file_name.append(std::to_string(frame_index_)).append(".wav");
         ma_result result =
-            ma_encoder_init_file(file_name, &config, &impl_->encoder_);
+            ma_encoder_init_file(file_name.c_str(), &config, &impl_->encoder_);
         if (result == MA_SUCCESS)
             impl_->write_task_ = std::thread(&AudioEngine::write_task, this);
         else
